@@ -6,16 +6,26 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.InMemoryFilmManager;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FilmControllerTest {
     private static Film film;
     private static FilmController filmController;
+    private final static Validator validator;
+
+    static {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.usingContext().getValidator();
+    }
 
     @BeforeEach
     public void beforeEach() {
@@ -29,6 +39,22 @@ class FilmControllerTest {
     }
 
     @Test
+    public void testValidations() {
+        Film invalidFilm = filmController.createFilm(film);
+        invalidFilm.setName(null);
+        invalidFilm.setDescription(null);
+        invalidFilm.setReleaseDate(LocalDate.of(800, 1, 1));
+        invalidFilm.setDuration(-5);
+        char[] chars = new char[201];
+        Arrays.fill(chars, 'n');
+        invalidFilm.setDescription(new String(chars));
+
+        Set<ConstraintViolation<Film>> validates = validator.validate(invalidFilm);
+        assertTrue(validates.size() > 0);
+        validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
+    }
+
+    @Test
     public void shouldAddFilm() {
         filmController.createFilm(film);
         List<Film> expectedFilms = List.of(film);
@@ -38,45 +64,16 @@ class FilmControllerTest {
     }
 
     @Test
-    public void shouldNotAddFilmWhenNameEmpty() {
-        film.setName(" ");
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(film));
-        String expectedMessage = "Film name can't be empty";
+    public void shouldNotAddFilmWhenFilmAlreadyExists() {
+        Film newFilm = filmController.createFilm(film);
+        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(newFilm));
+        String expectedMessage = "Film with id " + newFilm.getId() + " already exists";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
-    public void shouldNotAddFilmWhenReleaseDateIsIncorrect() {
-        film.setReleaseDate(LocalDate.of(1800, 1, 1));
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(film));
-        String expectedMessage = "Film release date should be after 28 December 1895";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldNotAddFilmWhenDescriptionLengthMoreThan200() {
-        char[] chars = new char[201];
-        Arrays.fill(chars, 'n');
-        film.setDescription(new String(chars));
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(film));
-        String expectedMessage = "Max film description length 200";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldNotAddFilmWhenDurationIsNegative() {
-        film.setDuration(-10);
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(film));
-        String expectedMessage = "Film duration should be > 0";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldUpdateUserNormal() {
+    public void shouldUpdateFilmNormal() {
         filmController.createFilm(film);
 
         Film updatedFilm = film;

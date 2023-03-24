@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmManager;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film createFilm(@NotNull @RequestBody Film film) {
+    public Film createFilm(@NotNull @RequestBody @Valid Film film) {
         log.info("POST request received: {}", film);
         Film response = manager.createFilm(film);
         log.info("Added film: {}", film.toString());
@@ -34,7 +35,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@NotNull @RequestBody Film film) {
+    public Film updateFilm(@NotNull @RequestBody @Valid Film film) {
         log.info("PUT request received: {}", film);
         Film response = manager.updateFilm(film);
         log.info("Updated film: {}", film.toString());
