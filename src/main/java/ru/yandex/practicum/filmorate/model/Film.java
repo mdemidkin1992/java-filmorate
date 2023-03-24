@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.filmorate.validator.ReleaseDateConstraint;
+import ru.yandex.practicum.filmorate.model.validator.ReleaseDateConstraint;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -21,16 +21,18 @@ public class Film {
     @NotNull
     int id;
 
-    @NotNull(message = "Name can't be null")
+    @NotNull
     @NotBlank(message = "Film name can't be empty")
     String name;
 
     @Size(max = MIN_DESCRIPTION_LENGTH, message = "Max film description length " + MIN_DESCRIPTION_LENGTH)
     String description;
 
+    @NotNull
     @ReleaseDateConstraint(message = "Film release date should be after 28 December 1895")
     LocalDate releaseDate;
 
+    @NotNull
     @Positive(message = "Film duration should be > 0")
     int duration;
 }

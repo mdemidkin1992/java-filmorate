@@ -1,5 +1,5 @@
 ToDo к проекту 24.03.2023
 DONE 1. Поменять название проекта на filmorate (а не filmoweb)
-2. Настроить валидацию через @Valid, а не через if-else и переписать Unit тесты
-3. @Builder.Default не понравилась - убрать
+DONE 2. Настроить валидацию через @Valid, а не через if-else и переписать Unit тесты
+DONE 3. @Builder.Default не понравилась - убрать
 DONE 4. Вместо множественных private лучше использовать @fielddefaults

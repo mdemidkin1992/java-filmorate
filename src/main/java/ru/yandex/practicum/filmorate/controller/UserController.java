@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserManager;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@NotNull @RequestBody User user) {
+    public User createUser(@NotNull @RequestBody @Valid User user) {
         log.info("POST request received: {}", user);
         User response = manager.createUser(user);
         log.info("Added user: {}", user.toString());
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@NotNull @RequestBody User user) {
+    public User updateUser(@NotNull @RequestBody @Valid User user) {
         log.info("PUT request received: {}", user);
         User response = manager.updateUser(user);
         log.info("Updated user: {}", user.toString());

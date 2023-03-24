@@ -6,15 +6,25 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.InMemoryUserManager;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
     private static User user;
     private static UserController userController;
+    private final static Validator validator;
+
+    static {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.usingContext().getValidator();
+    }
 
     @BeforeEach
     public void beforeEach() {
@@ -28,6 +38,19 @@ class UserControllerTest {
     }
 
     @Test
+    public void testValidations() {
+        User invalidUser = userController.createUser(user);
+        invalidUser.setEmail("wrong email.com@");
+        invalidUser.setLogin(null);
+        invalidUser.setName("wrong user name");
+        invalidUser.setBirthday(LocalDate.of(2030, 1, 1));
+
+        Set<ConstraintViolation<User>> validates = validator.validate(invalidUser);
+        assertTrue(validates.size() > 0);
+        validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
+    }
+
+    @Test
     public void shouldAddUser() {
         userController.createUser(user);
         List<User> expectedUsers = List.of(user);
@@ -37,28 +60,10 @@ class UserControllerTest {
     }
 
     @Test
-    public void shouldNotAddUserWhenLoginIsEmpty() {
-        user.setLogin(" ");
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(user));
-        String expectedMessage = "User login can't be empty or contain spaces";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldNotAddUserWhenEmailIncorrect() {
-        user.setEmail("exampleemail.ru");
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(user));
-        String expectedMessage = "User email can't be empty and must contain @";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldNotAddUserWhenBirthdayIncorrect() {
-        user.setBirthday(LocalDate.of(2025, 1, 1));
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(user));
-        String expectedMessage = "User birthday date is not valid";
+    public void shouldNotAddUserWhenUserAlreadyExists() {
+        User newUser = userController.createUser(user);
+        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(newUser));
+        String expectedMessage = "User with id " + newUser.getId() + " already exists";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
