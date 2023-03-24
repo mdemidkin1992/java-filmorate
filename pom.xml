@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ru.yandex.practicum</groupId>
-	<artifactId>filmoweb</artifactId>
+	<artifactId>filmorate</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>filmoweb</name>
+	<name>filmorate</name>
 	<description>Filmorate project for Spring Boot</description>
 	<properties>
 		<java.version>11</java.version>

@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmoweb.controller;
+package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmoweb.model.User;
-import ru.yandex.practicum.filmoweb.service.UserManager;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserManager;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;

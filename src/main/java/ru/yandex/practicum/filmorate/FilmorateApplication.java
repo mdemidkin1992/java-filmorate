@@ -1,13 +1,13 @@
-package ru.yandex.practicum.filmoweb;
+package ru.yandex.practicum.filmorate;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class FilmowebApplication {
+public class FilmorateApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FilmowebApplication.class, args);
+		SpringApplication.run(FilmorateApplication.class, args);
 
 	}
 

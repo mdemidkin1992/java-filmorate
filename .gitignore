@@ -3,6 +3,7 @@ mvnw
 mvnw.cmd
 .DS_Store
 /**/src/*.DS_Store
+*.txt
 
 *.class
 *.log
