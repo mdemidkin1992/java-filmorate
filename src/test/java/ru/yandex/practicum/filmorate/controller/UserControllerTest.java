@@ -76,21 +76,21 @@ class UserControllerTest {
     @Test
     public void shouldAddFriendWhenIdIsCorrect() {
         int userId = user1.getId();
-        int friendId_1 = user2.getId();
-        int friendId_2 = user3.getId();
-        int friendId_3 = user4.getId();
-        int friendId_4 = user5.getId();
+        int friendId1 = user2.getId();
+        int friendId2 = user3.getId();
+        int friendId3 = user4.getId();
+        int friendId4 = user5.getId();
 
-        userController.addFriend(userId, friendId_1);
-        userController.addFriend(userId, friendId_2);
-        userController.addFriend(userId, friendId_3);
-        userController.addFriend(userId, friendId_4);
+        userController.addFriend(userId, friendId1);
+        userController.addFriend(userId, friendId2);
+        userController.addFriend(userId, friendId3);
+        userController.addFriend(userId, friendId4);
 
         Set<Long> expectedSet = new HashSet<>();
-        expectedSet.add((long) friendId_1);
-        expectedSet.add((long) friendId_2);
-        expectedSet.add((long) friendId_3);
-        expectedSet.add((long) friendId_4);
+        expectedSet.add((long) friendId1);
+        expectedSet.add((long) friendId2);
+        expectedSet.add((long) friendId3);
+        expectedSet.add((long) friendId4);
 
         Set<Long> actualSet = userController.getUserById(userId).getFriends();
 
