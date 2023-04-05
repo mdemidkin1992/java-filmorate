@@ -23,7 +23,7 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> findUsers() {
+    public List<User> getUsers() {
         log.info("Number of users: {}", userService.getUsers().size());
         return userService.getUsers();
     }
@@ -32,7 +32,7 @@ public class UserController {
     public User getUserById(@PathVariable("id") Integer userId) {
         log.info("GET request received: user with id \"{}\"", userId);
         User response = userService.getUserById(userId);
-        log.info("User with id \"{}\"", response.toString());
+        log.info("User with id \"{}\": \"{}\"", userId, response.toString());
         return response;
     }
 
@@ -86,13 +86,4 @@ public class UserController {
         log.info("Users \"{}\" and \"{}\" common friends: \"{}\"", userId, otherId, response);
         return response;
     }
-
-    // TODO Обновление эндпоинтов — UserController:
-    /*
-    1. GET /users/{id} — с помощью @PathVariable получать по id пользователя. DONE
-    2. PUT /users/{id}/friends/{friendId} — добавление в друзья. DONE
-    3. DELETE /users/{id}/friends/{friendId} — удаление из друзей. DONE
-    4. GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями. DONE
-    5. GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем. DONE
-    */
 }

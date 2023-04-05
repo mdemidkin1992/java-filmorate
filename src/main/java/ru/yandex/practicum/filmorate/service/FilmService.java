@@ -20,11 +20,10 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private final static int TOP_FILMS_LIST_SIZE = 10;
 
     @Autowired
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage, UserStorage userService) {
-        this.userStorage = userService;
+    public FilmService(InMemoryFilmStorage inMemoryFilmStorage, UserStorage inMemoryUserStorage) {
+        this.userStorage = inMemoryUserStorage;
         this.filmStorage = inMemoryFilmStorage;
     }
 
@@ -36,16 +35,16 @@ public class FilmService {
         return this.filmStorage.updateFilm(film);
     }
 
-    public void deleteFilm(int filmId) {
-        this.filmStorage.deleteFilm(filmId);
-    }
-
     public Film getFilmById(int filmId) {
         return this.filmStorage.getFilmById(filmId);
     }
 
     public List<Film> getFilms() {
         return new ArrayList<>(this.filmStorage.getFilms().values());
+    }
+
+    public Set<Long> getLikes(int filmId) {
+        return this.filmStorage.getFilmById(filmId).getLikes();
     }
 
     public Set<Long> addLike(int filmId, int userId) {
@@ -68,7 +67,7 @@ public class FilmService {
     }
 
     private int compare(Film film1, Film film2) {
-        return Integer.compare(film1.getLikes().size(), film2.getLikes().size());
+        return Integer.compare(film2.getLikes().size(), film1.getLikes().size());
     }
 
     private void checkFilmAndUserIds(int filmId, int userId) {

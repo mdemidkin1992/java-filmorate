@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -23,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User getUserById(int userId) {
         if (!users.containsKey(userId)) {
             log.error("User with id {} doesn't exist", userId);
-            throw new ValidationException("User with id " + userId + " doesn't exist");
+            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         return this.users.get(userId);
     }
@@ -47,18 +48,9 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(User user) {
         if (!users.containsKey(user.getId())) {
             log.error("User with id {} doesn't exist", user.getId());
-            throw new ValidationException("User with id " + user.getId() + " doesn't exist");
+            throw new UserNotFoundException("User with id " + user.getId() + " doesn't exist");
         }
         users.put(user.getId(), user);
         return user;
-    }
-
-    @Override
-    public void deleteUser(int userId) {
-        if (!users.containsKey(userId)) {
-            log.error("User with id {} doesn't exist", userId);
-            throw new ValidationException("User with id " + userId + " doesn't exist");
-        }
-        users.remove(userId);
     }
 }

@@ -29,10 +29,6 @@ public class UserService {
         return this.userStorage.updateUser(user);
     }
 
-    public void deleteUser(int userId) {
-        this.userStorage.deleteUser(userId);
-    }
-
     public User getUserById(int userId) {
         return this.userStorage.getUserById(userId);
     }

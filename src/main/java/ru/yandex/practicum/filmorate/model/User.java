@@ -37,7 +37,7 @@ public class User {
     @BirthdayConstraint(message = "User birthday date can't be in the past")
     LocalDate birthday;
 
-    Set<Long> friends;
+    private final Set<Long> friends = new HashSet<>();
 
     public void addFriend(int friendId) {
         friends.add((long) friendId);

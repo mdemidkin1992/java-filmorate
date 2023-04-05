@@ -9,8 +9,6 @@ public interface UserStorage {
 
     User updateUser(User user);
 
-    void deleteUser(int userId);
-
     User getUserById(int userId);
 
     Map<Integer, User> getUsers();

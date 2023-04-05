@@ -9,8 +9,6 @@ public interface FilmStorage {
 
     Film updateFilm(Film film);
 
-    void deleteFilm(int filmId);
-
     Film getFilmById(int filmId);
 
     Map<Integer, Film> getFilms();

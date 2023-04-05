@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -37,7 +38,7 @@ public class Film {
     @Positive(message = "Film duration should be > 0")
     int duration;
 
-    Set<Long> likes;
+    private final Set<Long> likes = new HashSet<>();
 
     public void addLike(int userId) {
         this.likes.add((long) userId);

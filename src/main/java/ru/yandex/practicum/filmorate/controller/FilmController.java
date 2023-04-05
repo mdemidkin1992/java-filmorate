@@ -23,7 +23,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> findFilms() {
+    public List<Film> getFilms() {
         log.info("Number of films: {}", filmService.getFilms().size());
         return filmService.getFilms();
     }
@@ -45,7 +45,7 @@ public class FilmController {
     }
 
     @GetMapping("{id}")
-    public Film getFilmById(int filmId) {
+    public Film getFilmById(@PathVariable("id") int filmId) {
         log.info("GET request received: film with id \"{}\"", filmId);
         Film response = filmService.getFilmById(filmId);
         log.info("Film with id \"{}\"", response.toString());
@@ -56,8 +56,9 @@ public class FilmController {
     public Set<Long> addLike(@PathVariable("id") int filmId,
                              @PathVariable("userId") int userId) {
         log.info("PUT request received: user id \"{}\" likes film id \"{}\"", userId, filmId);
-        Set<Long> response = filmService.addLike(filmId, userId);
-        log.info("Film {} updated likes list: {}", filmId, response);
+        filmService.addLike(filmId, userId);
+        Set<Long> response = filmService.getLikes(filmId);
+        log.info("Film \"{}\" updated likes list: {}", filmId, response);
         return response;
     }
 
@@ -65,8 +66,9 @@ public class FilmController {
     public Set<Long> deleteLike(@PathVariable("id") int filmId,
                                 @PathVariable("userId") int userId) {
         log.info("DELETE request received: user id \"{}\" deletes like from film id \"{}\"", userId, filmId);
-        Set<Long> response = filmService.deleteLike(filmId, userId);
-        log.info("Film {} updated likes list: {}", filmId, response);
+        filmService.deleteLike(filmId, userId);
+        Set<Long> response = filmService.getLikes(filmId);
+        log.info("Film \"{}\" updated likes list: {}", filmId, response);
         return response;
     }
 
@@ -79,12 +81,4 @@ public class FilmController {
         log.info("Most popular films: {}", response);
         return response;
     }
-
-    // TODO Обновление эндпоинтов — FilmController:
-    /*
-    1. GET /films/{id} — с помощью @PathVariable получать по id фильма. DONE
-    2. PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму. DONE
-    3. DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.    DONE
-    4. GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение параметра count не задано, верните первые 10. DONE
-    */
 }
