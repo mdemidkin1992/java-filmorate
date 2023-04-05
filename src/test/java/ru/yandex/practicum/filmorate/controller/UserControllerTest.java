@@ -117,7 +117,7 @@ class UserControllerTest {
 
     @Test
     public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() {
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(2, 333));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(user2.getId(), 333));
         String expectedMessage = "User with id \"333\" doesn't exist.";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -125,12 +125,11 @@ class UserControllerTest {
 
     @Test
     public void shouldNotRemoveFriendsWhenUserIdIsIncorrect() {
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(111, 3));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(111, user3.getId()));
         String expectedMessage = "User with id \"111\" doesn't exist.";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
-
 
     @Test
     public void shouldNotAddUserWhenUserAlreadyExists() {
