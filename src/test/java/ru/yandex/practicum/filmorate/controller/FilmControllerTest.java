@@ -28,11 +28,11 @@ class FilmControllerTest {
     private static FilmController filmController;
     private static Film film1, film2, film3, film4, film5;
     private static User user1, user2, user3, user4, user5;
-    private final static Validator validator;
+    private static final Validator VALIDATOR;
 
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-        validator = validatorFactory.usingContext().getValidator();
+        VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
     @BeforeAll
@@ -71,7 +71,7 @@ class FilmControllerTest {
     @Test
     public void testValidations() {
         Film invalidFilm = Film.builder().id(1).name(null).description(null).releaseDate(LocalDate.of(800, 1, 1)).duration(-5).build();
-        Set<ConstraintViolation<Film>> validates = validator.validate(invalidFilm);
+        Set<ConstraintViolation<Film>> validates = VALIDATOR.validate(invalidFilm);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
         filmController.updateFilm(film1);

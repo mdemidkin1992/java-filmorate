@@ -23,11 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
     private static UserController userController;
     private static User user1, user2, user3, user4, user5;
-    private final static Validator validator;
+    private static final Validator VALIDATOR;
 
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-        validator = validatorFactory.usingContext().getValidator();
+        VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
     @BeforeAll
@@ -55,7 +55,7 @@ class UserControllerTest {
         invalidUser.setName("wrong user name");
         invalidUser.setBirthday(LocalDate.of(2030, 1, 1));
 
-        Set<ConstraintViolation<User>> validates = validator.validate(invalidUser);
+        Set<ConstraintViolation<User>> validates = VALIDATOR.validate(invalidUser);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
     }
