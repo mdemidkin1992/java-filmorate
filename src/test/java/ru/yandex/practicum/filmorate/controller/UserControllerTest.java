@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -195,13 +194,4 @@ class UserControllerTest {
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
-
-    // TODO дополнить тестами
-    // 1. shouldNotGetUserWhenIdIsIncorrect() DONE
-    // 2. shouldDeleteUser()
-    // 3. shouldDeleteFriend()
-    // 4. shouldNotAddFriendWhenUserOrFriendIdIsIncorrect()
-    // 5. DONE shouldAddUserWhenNameIsEmpty()
-    // 6. shouldNotDeleteUserWhenIdIsIncorrect()
-
 }
