@@ -1,24 +1,32 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-@Controller
+@Component
 @Slf4j
-public class InMemoryUserManager implements UserManager {
+public class InMemoryUserStorage implements UserStorage {
     private static int id = 0;
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+    public Map<Integer, User> getUsers() {
+        return this.users;
+    }
+
+    @Override
+    public User getUserById(int userId) {
+        if (!users.containsKey(userId)) {
+            log.error("User with id {} doesn't exist", userId);
+            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
+        }
+        return this.users.get(userId);
     }
 
     @Override
@@ -40,7 +48,7 @@ public class InMemoryUserManager implements UserManager {
     public User updateUser(User user) {
         if (!users.containsKey(user.getId())) {
             log.error("User with id {} doesn't exist", user.getId());
-            throw new ValidationException("User with id " + user.getId() + " doesn't exist");
+            throw new UserNotFoundException("User with id " + user.getId() + " doesn't exist");
         }
         users.put(user.getId(), user);
         return user;

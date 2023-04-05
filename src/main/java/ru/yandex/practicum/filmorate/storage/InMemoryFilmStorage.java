@@ -1,24 +1,32 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-@Controller
+@Component
 @Slf4j
-public class InMemoryFilmManager implements FilmManager {
+public class InMemoryFilmStorage implements FilmStorage {
     private static int id = 0;
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
-    public List<Film> getFilms() {
-        return new ArrayList<>(films.values());
+    public Map<Integer, Film> getFilms() {
+        return this.films;
+    }
+
+    @Override
+    public Film getFilmById(int filmId) {
+        if (!films.containsKey(filmId)) {
+            log.error("Film with id {} doesn't exist", filmId);
+            throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
+        }
+        return this.films.get(filmId);
     }
 
     @Override
@@ -36,9 +44,10 @@ public class InMemoryFilmManager implements FilmManager {
     public Film updateFilm(Film film) {
         if (!films.containsKey(film.getId())) {
             log.error("Film with id {} doesn't exist", film.getId());
-            throw new ValidationException("Film with id " + film.getId() + " doesn't exist");
+            throw new FilmNotFoundException("Film with id " + film.getId() + " doesn't exist");
         }
         films.put(film.getId(), film);
         return film;
     }
+
 }
