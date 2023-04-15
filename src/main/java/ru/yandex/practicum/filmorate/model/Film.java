@@ -18,7 +18,7 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    static final int MIN_DESCRIPTION_LENGTH = 200;
+    static final int MAX_DESCRIPTION_LENGTH = 200;
 
     @NotNull
     int id;
@@ -27,7 +27,7 @@ public class Film {
     @NotBlank(message = "Film name can't be empty")
     String name;
 
-    @Size(max = MIN_DESCRIPTION_LENGTH, message = "Max film description length " + MIN_DESCRIPTION_LENGTH)
+    @Size(max = MAX_DESCRIPTION_LENGTH, message = "Max film description length " + MAX_DESCRIPTION_LENGTH)
     String description;
 
     @NotNull
