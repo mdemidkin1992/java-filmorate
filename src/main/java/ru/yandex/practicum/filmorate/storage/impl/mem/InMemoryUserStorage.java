@@ -1,23 +1,39 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl.mem;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Component
+@Component("inMemoryUserStorage")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
     private static int id = 0;
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public Map<Integer, User> getUsers() {
-        return this.users;
+    public List<User> getUsers() {
+        return new ArrayList<>(this.users.values());
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(int userId, int friendId) {
+
+    }
+
+    @Override
+    public List<User> getCommonFriends(int userId, int otherId) {
+        return null;
     }
 
     @Override
@@ -28,6 +44,12 @@ public class InMemoryUserStorage implements UserStorage {
         }
         return this.users.get(userId);
     }
+
+    @Override
+    public List<User> getFriends(String userId) {
+        return null;
+    }
+
 
     @Override
     public User createUser(User user) {

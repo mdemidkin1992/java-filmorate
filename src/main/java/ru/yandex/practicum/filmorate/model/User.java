@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.model.validator.BirthdayConstraint;
 
 import javax.validation.constraints.Email;
@@ -11,14 +9,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    @NotNull
     int id;
 
     @NotNull
@@ -28,22 +22,12 @@ public class User {
 
     @NotNull
     @NotBlank(message = "User login can't be empty")
-    @Pattern(regexp = "^[\\S]*$", message = "User name can't contain spaces")
+    @Pattern(regexp = "^[\\S]*$", message = "User login can't contain spaces")
     String login;
 
     String name;
 
     @NotNull
-    @BirthdayConstraint(message = "User birthday date can't be in the past")
+    @BirthdayConstraint(message = "User birthday date can't be in the future")
     LocalDate birthday;
-
-    private final Set<Long> friends = new HashSet<>();
-
-    public void addFriend(int friendId) {
-        friends.add((long) friendId);
-    }
-
-    public void deleteFriend(int friendId) {
-        friends.remove((long) friendId);
-    }
 }

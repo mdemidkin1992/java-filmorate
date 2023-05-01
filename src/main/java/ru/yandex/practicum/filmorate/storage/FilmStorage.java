@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
+import java.util.List;
 import java.util.Map;
 
 public interface FilmStorage {
@@ -11,5 +14,19 @@ public interface FilmStorage {
 
     Film getFilmById(int filmId);
 
-    Map<Integer, Film> getFilms();
+    List<Film> getFilms();
+
+    void addLike(int filmId, int userId);
+
+    void deleteLike(int filmId, int userId);
+
+    List<Film> getPopularFilms(int count);
+
+    List<Genre> getAllGenres();
+
+    Genre getGenreById(int genreId);
+
+    List<Rating> getAllRatings();
+
+    Rating getRatingById(int ratingId);
 }
