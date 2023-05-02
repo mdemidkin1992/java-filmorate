@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.impl.db.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.Date;
 import java.sql.ResultSet;

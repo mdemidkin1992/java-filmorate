@@ -12,7 +12,10 @@ import ru.yandex.practicum.filmorate.storage.impl.db.mapper.UserMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component("userDbStorage")
 @Slf4j

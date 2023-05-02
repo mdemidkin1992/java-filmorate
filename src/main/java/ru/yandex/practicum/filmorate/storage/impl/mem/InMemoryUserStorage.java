@@ -23,19 +23,30 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-
+        checkUserIds(userId, friendId);
+        getUserById(userId).addFriend(friendId);
+        getUserById(friendId).addFriend(userId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
-
+        checkUserIds(userId, friendId);
+        getUserById(userId).deleteFriend(friendId);
+        getUserById(friendId).deleteFriend(userId);
     }
 
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
-        return null;
-    }
+        Set<Long> userFriends = getUserById(userId).getFriends();
+        Set<Long> otherUserFriends = getUserById(otherId).getFriends();
 
+        Set<Long> intersection = new HashSet<>(userFriends);
+        intersection.retainAll(otherUserFriends);
+
+        return getUsers().stream()
+                .filter(user -> intersection.contains((long) user.getId()))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public User getUserById(int userId) {
@@ -48,9 +59,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int userId) {
-        return null;
+        Set<Long> friendsIds = getUserById(userId).getFriends();
+        return getUsers().stream()
+                .filter(user -> friendsIds.contains((long) user.getId()))
+                .collect(Collectors.toList());
     }
-
 
     @Override
     public User createUser(User user) {
@@ -75,5 +88,16 @@ public class InMemoryUserStorage implements UserStorage {
         }
         users.put(user.getId(), user);
         return user;
+    }
+
+    private void checkUserIds(int userId, int friendId) {
+        if (!users.containsKey(userId)) {
+            log.error("User with id {} doesn't exist.", userId);
+            throw new UserNotFoundException(String.format("User with id \"%s\" doesn't exist.", userId));
+        }
+        if (!users.containsKey(friendId)) {
+            log.error("User with id {} doesn't exist.", friendId);
+            throw new UserNotFoundException(String.format("User with id \"%s\" doesn't exist.", friendId));
+        }
     }
 }
