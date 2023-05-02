@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.impl.mem;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -13,51 +15,42 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component("inMemoryFilmStorage")
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
     private static int id = 0;
     private final Map<Integer, Film> films = new HashMap<>();
+    private final InMemoryUserStorage inMemoryUserStorage;
+
+    public InMemoryFilmStorage(InMemoryUserStorage inMemoryUserStorage) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
+    }
 
     @Override
     public List<Film> getFilms() {
-        return new ArrayList<>(this.films.values());
+        return new ArrayList<>(films.values());
     }
 
     @Override
     public void addLike(int filmId, int userId) {
-
+        checkFilmAndUserIds(filmId, userId);
+        getFilmById(filmId).addLike(userId);
     }
 
     @Override
     public void deleteLike(int filmId, int userId) {
-
+        checkFilmAndUserIds(filmId, userId);
+        getFilmById(filmId).deleteLike(userId);
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return null;
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        return null;
-    }
-
-    @Override
-    public Genre getGenreById(int genreId) {
-        return null;
-    }
-
-    @Override
-    public List<Rating> getAllRatings() {
-        return null;
-    }
-
-    @Override
-    public Rating getRatingById(int ratingId) {
-        return null;
+        return films.values().stream()
+                .sorted((film1, film2) -> compare(film1, film2))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -89,5 +82,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.put(film.getId(), film);
         return film;
     }
+    private int compare(Film film1, Film film2) {
+        return Integer.compare(film2.getLikes().size(), film1.getLikes().size());
+    }
 
+    private void checkFilmAndUserIds(int filmId, int userId) {
+        if (!films.containsKey(filmId)) {
+            log.error("Film with id {} doesn't exist.", filmId);
+            throw new FilmNotFoundException(String.format("Film with id \"%s\" doesn't exist.", filmId));
+        }
+    }
 }

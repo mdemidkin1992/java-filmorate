@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenresStorage;
+import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
 import java.util.List;
 
@@ -15,10 +17,14 @@ import java.util.List;
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final GenresStorage genresStorage;
+    private final RatingStorage ratingStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, GenresStorage genresStorage, RatingStorage ratingStorage) {
         this.filmStorage = filmStorage;
+        this.genresStorage = genresStorage;
+        this.ratingStorage = ratingStorage;
     }
 
     public Film createFilm(Film film) {
@@ -50,18 +56,18 @@ public class FilmService {
     }
 
     public List<Rating> getRatings() {
-        return filmStorage.getAllRatings();
+        return ratingStorage.getAllRatings();
     }
 
     public Rating getRatingById(int ratingId) {
-        return filmStorage.getRatingById(ratingId);
+        return ratingStorage.getRatingById(ratingId);
     }
 
     public List<Genre> getGenres() {
-        return filmStorage.getAllGenres();
+        return genresStorage.getAllGenres();
     }
 
     public Genre getGenreById(int genreId) {
-        return filmStorage.getGenreById(genreId);
+        return genresStorage.getGenreById(genreId);
     }
 }

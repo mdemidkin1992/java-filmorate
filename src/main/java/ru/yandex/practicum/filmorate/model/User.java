@@ -9,6 +9,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -30,4 +32,14 @@ public class User {
     @NotNull
     @BirthdayConstraint(message = "User birthday date can't be in the future")
     LocalDate birthday;
+
+    private final Set<Long> friends = new HashSet<>();
+
+    public void addFriend(int friendId) {
+        friends.add((long) friendId);
+    }
+
+    public void deleteFriend(int friendId) {
+        friends.remove((long) friendId);
+    }
 }

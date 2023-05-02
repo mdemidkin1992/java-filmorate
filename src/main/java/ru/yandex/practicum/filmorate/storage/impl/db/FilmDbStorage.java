@@ -157,36 +157,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    @Override
-    public List<Genre> getAllGenres() {
-        return jdbcTemplate.query(SqlQueries.GET_GENRES, new GenreMapper());
-    }
-
-    @Override
-    public Genre getGenreById(int genreId) {
-        Genre genre = jdbcTemplate.query(SqlQueries.GET_GENRE, new GenreMapper(), genreId).stream().findAny().orElse(null);
-        if (genre == null) {
-            log.error("Genre with id {} doesn't exist", genreId);
-            throw new GenreNotFoundException("Genre with id " + genreId + " doesn't exist");
-        }
-        return genre;
-    }
-
-    @Override
-    public List<Rating> getAllRatings() {
-        return jdbcTemplate.query(SqlQueries.GET_RATINGS, new RatingMapper());
-    }
-
-    @Override
-    public Rating getRatingById(int ratingId) {
-        Rating mpa = jdbcTemplate.query(SqlQueries.GET_RATING, new RatingMapper(), ratingId).stream().findAny().orElse(null);
-        if (mpa == null) {
-            log.error("Rating with id {} doesn't exist", ratingId);
-            throw new RatingNotFoundException("Rating with id " + ratingId + " doesn't exist");
-        }
-        return mpa;
-    }
-
     public void clearDb() {
         jdbcTemplate.update("DELETE FROM APP_USERS");
         jdbcTemplate.update("DELETE FROM FILMS");

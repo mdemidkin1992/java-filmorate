@@ -20,12 +20,4 @@ public interface FilmStorage {
     void deleteLike(int filmId, int userId);
 
     List<Film> getPopularFilms(int count);
-
-    List<Genre> getAllGenres();
-
-    Genre getGenreById(int genreId);
-
-    List<Rating> getAllRatings();
-
-    Rating getRatingById(int ratingId);
 }
