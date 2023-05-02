@@ -54,7 +54,7 @@ public class FilmController {
 
     @PutMapping("{id}/like/{userId}")
     public void addLike(@PathVariable("id") int filmId,
-                             @PathVariable("userId") int userId) {
+                        @PathVariable("userId") int userId) {
         log.info("PUT request received: user id \"{}\" likes film id \"{}\"", userId, filmId);
         filmService.addLike(filmId, userId);
         log.info("Film \"{}\" added like from user \"{}\"", filmId, userId);
@@ -62,7 +62,7 @@ public class FilmController {
 
     @DeleteMapping("{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") int filmId,
-                                @PathVariable("userId") int userId) {
+                           @PathVariable("userId") int userId) {
         log.info("DELETE request received: user id \"{}\" deletes like from film id \"{}\"", userId, filmId);
         filmService.deleteLike(filmId, userId);
         log.info("Film \"{}\" deleted like from user \"{}\"", filmId, userId);

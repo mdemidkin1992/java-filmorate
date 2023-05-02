@@ -30,25 +30,19 @@ public class UserDbStorage implements UserStorage {
             log.error("User name empty. Set user name {}", user.getLogin());
             user.setName(user.getLogin());
         }
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(SqlQueries.ADD_USER, new String[]{"USER_ID"});
-            stmt.setString(1, user.getName());
-            stmt.setString(2, user.getLogin());
-            stmt.setString(3, user.getEmail());
-            stmt.setDate(4, Date.valueOf(user.getBirthday()));
-            return stmt;
-        }, keyHolder);
-
-        user.setId(keyHolder.getKey().intValue());
+        addUserToDb(user);
         return user;
     }
 
     @Override
     public User updateUser(User user) {
         checkUserById(user.getId());
-        jdbcTemplate.update(SqlQueries.UPDATE_USER, user.getName(), user.getLogin(), user.getEmail(), user.getBirthday(), user.getId());
+        jdbcTemplate.update(SqlQueries.UPDATE_USER,
+                user.getName(),
+                user.getLogin(),
+                user.getEmail(),
+                user.getBirthday(),
+                user.getId());
         return user;
     }
 
@@ -68,7 +62,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getFriends(String userId) {
+    public List<User> getFriends(int userId) {
         return jdbcTemplate.query(SqlQueries.GET_FRIENDS, new UserMapper(), userId);
     }
 
@@ -102,5 +96,26 @@ public class UserDbStorage implements UserStorage {
             log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
+    }
+
+    private void addUserToDb(User user) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(SqlQueries.ADD_USER, new String[]{"USER_ID"});
+            stmt.setString(1, user.getName());
+            stmt.setString(2, user.getLogin());
+            stmt.setString(3, user.getEmail());
+            stmt.setDate(4, Date.valueOf(user.getBirthday()));
+            return stmt;
+        }, keyHolder);
+        user.setId(keyHolder.getKey().intValue());
+    }
+
+    public void clearDb() {
+        jdbcTemplate.update("DELETE FROM APP_USERS");
+        jdbcTemplate.update("DELETE FROM FILMS");
+        jdbcTemplate.update("DELETE FROM FILMS_GENRES");
+        jdbcTemplate.update("DELETE FROM LIKES");
+        jdbcTemplate.update("DELETE FROM FRIENDS");
     }
 }

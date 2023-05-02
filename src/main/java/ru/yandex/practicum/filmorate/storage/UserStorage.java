@@ -14,7 +14,7 @@ public interface UserStorage {
 
     User getUserById(int userId);
 
-    List<User> getFriends(String userId);
+    List<User> getFriends(int userId);
 
     List<User> getUsers();
 

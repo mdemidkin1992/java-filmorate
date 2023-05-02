@@ -35,5 +35,4 @@ public class Film {
     List<Genre> genres;
 
     Rating mpa;
-
 }

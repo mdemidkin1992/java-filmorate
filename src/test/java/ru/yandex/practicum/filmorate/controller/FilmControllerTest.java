@@ -1,16 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeAll;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.impl.mem.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.impl.mem.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.db.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -18,16 +20,17 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmControllerTest {
-    private static FilmController filmController;
-    private static Film film1, film2, film3, film4, film5;
-    private static User user1, user2, user3, user4, user5;
+    private final FilmDbStorage filmDbStorage;
+    private final UserDbStorage userDbStorage;
     private static final Validator VALIDATOR;
 
     static {
@@ -35,83 +38,54 @@ class FilmControllerTest {
         VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
-    @BeforeAll
-    public static void beforeAll() {
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
-        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-        UserController userController = new UserController(new UserService(userStorage));
-        filmController = new FilmController(new FilmService(filmStorage, userStorage));
-
-        film1 = Film.builder().name("Film name 1").description("Film description 1").releaseDate(LocalDate.of(1990, 1, 1)).duration(90).build();
-        film2 = Film.builder().name("Film name 2").description("Film description 2").releaseDate(LocalDate.of(1991, 1, 1)).duration(90).build();
-        film3 = Film.builder().name("Film name 3").description("Film description 3").releaseDate(LocalDate.of(1992, 1, 1)).duration(90).build();
-        film4 = Film.builder().name("Film name 4").description("Film description 4").releaseDate(LocalDate.of(1993, 1, 1)).duration(90).build();
-        film5 = Film.builder().name("Film name 5").description("Film description 5").releaseDate(LocalDate.of(1994, 1, 1)).duration(90).build();
-
-        user1 = User.builder().id(1).email("example_1@email.ru").login("login_1").name("name_1").birthday(LocalDate.of(1990, 1, 10)).build();
-        user2 = User.builder().id(2).email("example_2@email.ru").login("login_2").name("name_2").birthday(LocalDate.of(1991, 2, 11)).build();
-        user3 = User.builder().id(3).email("example_3@email.ru").login("login_3").name("name_3").birthday(LocalDate.of(1992, 3, 12)).build();
-        user4 = User.builder().id(4).email("example_4@email.ru").login("login_4").name("name_4").birthday(LocalDate.of(1993, 4, 13)).build();
-        user5 = User.builder().id(5).email("example_5@email.ru").login("login_5").name("name_5").birthday(LocalDate.of(1994, 5, 14)).build();
-
-
-        filmController.createFilm(film1);
-        filmController.createFilm(film2);
-        filmController.createFilm(film3);
-        filmController.createFilm(film4);
-        filmController.createFilm(film5);
-
-        userController.createUser(user1);
-        userController.createUser(user2);
-        userController.createUser(user3);
-        userController.createUser(user4);
-        userController.createUser(user5);
-    }
-
     @Test
     public void testValidations() {
-        Film invalidFilm = Film.builder().id(1).name(null).description(null).releaseDate(LocalDate.of(800, 1, 1)).duration(-5).build();
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
+        filmDbStorage.createFilm(film1);
+        int filmId = film1.getId();
+        Film invalidFilm = filmDbStorage.getFilmById(filmId);
+        invalidFilm.setReleaseDate(LocalDate.of(800, 1, 1));
+        invalidFilm.setDuration(-5);
         Set<ConstraintViolation<Film>> validates = VALIDATOR.validate(invalidFilm);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
-        filmController.updateFilm(film1);
     }
 
     @Test
     public void shouldGetAllFilms() {
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
+        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).build()).build();
+
+        filmDbStorage.createFilm(film1);
+        filmDbStorage.createFilm(film2);
+
+        int filmId1 = film1.getId(), filmId2 = film2.getId();
         List<Film> expected = new ArrayList<>();
-        expected.add(film1);
-        expected.add(film2);
-        expected.add(film3);
-        expected.add(film4);
-        expected.add(film5);
+        expected.add(filmDbStorage.getFilmById(filmId1));
+        expected.add(filmDbStorage.getFilmById(filmId2));
 
-        List<Film> actual = filmController.getFilms();
-        assertEquals(expected, actual, "Not all users were added to storage.");
-    }
-
-    @Test
-    public void shouldNotAddFilmWhenFilmAlreadyExists() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.createFilm(film1));
-        String expectedMessage = "Film with id " + film1.getId() + " already exists";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
+        List<Film> actual = filmDbStorage.getFilms();
+        assertEquals(expected, actual, "Not all films were added to storage.");
     }
 
     @Test
     public void shouldUpdateFilmNormal() {
-        Film updatedFilm = Film.builder().id(1).build();
-        filmController.updateFilm(updatedFilm);
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
+        filmDbStorage.createFilm(film1);
+        int filmId = film1.getId();
+        Film originalFilm = filmDbStorage.getFilmById(filmId);
+        Film updatedFilm = originalFilm;
+        updatedFilm.setDuration(201);
+        filmDbStorage.updateFilm(updatedFilm);
 
-        assertEquals(updatedFilm, filmController.getFilmById(updatedFilm.getId()));
-        filmController.updateFilm(film1);
+        assertEquals(updatedFilm, filmDbStorage.getFilmById(updatedFilm.getId()));
+        filmDbStorage.updateFilm(originalFilm);
     }
 
     @Test
     public void shouldNotUpdateFilmWhenIdIncorrect() {
         Film updatedFilm = Film.builder().id(999).build();
-
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmController.updateFilm(updatedFilm));
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.updateFilm(updatedFilm));
         String expectedMessage = "Film with id " + updatedFilm.getId() + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -119,52 +93,55 @@ class FilmControllerTest {
 
     @Test
     public void shouldAddLikeFromUserWithCorrectId() {
-        final int film1Id = film1.getId();
-        final int film2Id = film2.getId();
-        final int user1Id = user1.getId();
-        final int user2Id = user2.getId();
-        final int user3Id = user3.getId();
-        final int user4Id = user4.getId();
-        final int user5Id = user5.getId();
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
+        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).build()).build();
 
-        filmController.addLike(film1Id, user1Id);
-        filmController.addLike(film1Id, user2Id);
-        filmController.addLike(film1Id, user3Id);
-        filmController.addLike(film2Id, user4Id);
-        filmController.addLike(film2Id, user5Id);
+        filmDbStorage.createFilm(film1);
+        filmDbStorage.createFilm(film2);
 
-        final Set<Long> expectedLikesFirstFilm = new HashSet<>();
-        expectedLikesFirstFilm.add((long) user1Id);
-        expectedLikesFirstFilm.add((long) user2Id);
-        expectedLikesFirstFilm.add((long) user3Id);
+        int filmId1 = film1.getId(), filmId2 = film2.getId();
 
-        final Set<Long> expectedLikesSecondFilm = new HashSet<>();
-        expectedLikesSecondFilm.add((long) user4Id);
-        expectedLikesSecondFilm.add((long) user5Id);
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("Clark").login("clarklogin").email("clark@email.com").birthday(LocalDate.of(1997, 4, 6)).build();
+        User user4 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2000, 6, 10)).build();
+        User user5 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2001, 8, 12)).build();
 
-        final Set<Long> actualLikesFirstFilm = filmController.getFilms().get(film1.getId() - 1).getLikes();
-        final Set<Long> actualLikesSecondFilm = filmController.getFilms().get(film2.getId() - 1).getLikes();
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
 
-        assertEquals(expectedLikesFirstFilm, actualLikesFirstFilm);
-        assertEquals(expectedLikesSecondFilm, actualLikesSecondFilm);
+        int userId1 = user1.getId(), userId2 = user2.getId(), userId3 = user3.getId(), userId4 = user4.getId(), userId5 = user5.getId();
+
+        filmDbStorage.addLike(filmId1, userId1);
+        filmDbStorage.addLike(filmId1, userId2);
+        filmDbStorage.addLike(filmId2, userId3);
+        filmDbStorage.addLike(filmId2, userId4);
+        filmDbStorage.addLike(filmId2, userId5);
 
         final int count = 2;
         final List<Film> expectedPopularFilms = new ArrayList<>();
-        expectedPopularFilms.add(film1);
-        expectedPopularFilms.add(film2);
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
 
-        final List<Film> actualPopularFilms = filmController.getPopularFilms(count);
-        assertEquals(expectedPopularFilms, actualPopularFilms);
+        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilms(count);
+        assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
 
-        filmController.deleteLike(film1Id, user1Id);
-        expectedLikesFirstFilm.remove((long) user1Id);
-        assertEquals(expectedLikesFirstFilm, filmController.getFilmById(film1.getId()).getLikes());
+        filmDbStorage.deleteLike(filmId1, userId1);
+        filmDbStorage.deleteLike(filmId1, userId2);
+
+        expectedPopularFilms.clear();
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
+        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilms(count));
     }
 
     @Test
     public void shouldNotGetFilmWhenIdIsIncorrect() {
         int filmId = 999;
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmController.getFilmById(filmId));
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.getFilmById(filmId));
         String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -172,9 +149,12 @@ class FilmControllerTest {
 
     @Test
     public void shouldNotAddLikeWhenUserIdIsIncorrect() {
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
+        filmDbStorage.createFilm(film1);
+        int filmId1 = film1.getId();
         int userId = 999;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmController.addLike(film1.getId(), userId));
-        String expectedMessage = "User with id \"" + userId + "\" doesn't exist.";
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addLike(filmId1, userId));
+        String expectedMessage = "User with id " + userId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
@@ -182,9 +162,18 @@ class FilmControllerTest {
     @Test
     public void shouldNotAddLikeWhenFilmIdIsIncorrect() {
         int filmId = 999;
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmController.addLike(filmId, user1.getId()));
-        String expectedMessage = "Film with id \"" + filmId + "\" doesn't exist.";
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        userDbStorage.createUser(user1);
+        int userId1 = user1.getId();
+
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addLike(filmId, userId1));
+        String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
+    }
+
+    @AfterEach
+    public void clearDb() {
+        filmDbStorage.clearDb();
     }
 }

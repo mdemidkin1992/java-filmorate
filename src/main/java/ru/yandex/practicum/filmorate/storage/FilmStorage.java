@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.List;
-import java.util.Map;
 
 public interface FilmStorage {
     Film createFilm(Film film);

@@ -186,4 +186,12 @@ public class FilmDbStorage implements FilmStorage {
         }
         return mpa;
     }
+
+    public void clearDb() {
+        jdbcTemplate.update("DELETE FROM APP_USERS");
+        jdbcTemplate.update("DELETE FROM FILMS");
+        jdbcTemplate.update("DELETE FROM FILMS_GENRES");
+        jdbcTemplate.update("DELETE FROM LIKES");
+        jdbcTemplate.update("DELETE FROM FRIENDS");
+    }
 }

@@ -36,6 +36,7 @@ public class InMemoryUserStorage implements UserStorage {
         return null;
     }
 
+
     @Override
     public User getUserById(int userId) {
         if (!users.containsKey(userId)) {
@@ -46,7 +47,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getFriends(String userId) {
+    public List<User> getFriends(int userId) {
         return null;
     }
 

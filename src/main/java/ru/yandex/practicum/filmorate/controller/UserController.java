@@ -69,7 +69,7 @@ public class UserController {
     }
 
     @GetMapping("{id}/friends")
-    public List<User> getUserFriends(@PathVariable("id") String userId) {
+    public List<User> getUserFriends(@PathVariable("id") int userId) {
         log.info("GET request received: user \"{}\" friends", userId);
         List<User> response = userService.getUserFriends(userId);
         log.info("User \"{}\" friends: \"{}\"", userId, response);
@@ -83,5 +83,10 @@ public class UserController {
         List<User> response = userService.getCommonFriends(userId, otherId);
         log.info("Users \"{}\" and \"{}\" common friends: \"{}\"", userId, otherId, response);
         return response;
+    }
+
+    @DeleteMapping
+    public void deleteUser(@NotNull @RequestBody User user) {
+
     }
 }
