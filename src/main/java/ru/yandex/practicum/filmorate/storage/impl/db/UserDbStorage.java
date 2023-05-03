@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;

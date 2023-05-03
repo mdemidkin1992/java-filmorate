@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.RatingMapper;
+import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -77,10 +79,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilms() {
         List<Film> allFilms = jdbcTemplate.query(SqlQueries.GET_FILMS, new FilmMapper());
-        for (Film film : allFilms) {
-            film.setMpa(getFilmRating(film.getId()));
-            film.setGenres(getFilmGenres(film.getId()));
-        }
+        getGenres(allFilms);
+        getRatings(allFilms);
         return allFilms;
     }
 
@@ -101,11 +101,51 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS, new FilmMapper());
-        for (Film film : popularFilms) {
-            film.setMpa(getFilmRating(film.getId()));
-            film.setGenres(getFilmGenres(film.getId()));
-        }
+        getRatings(popularFilms);
+        getGenres(popularFilms);
         return popularFilms.stream().limit(count).collect(Collectors.toList());
+    }
+
+    private void getGenres(List<Film> films) {
+        SqlRowSet filmGenreIdRows = jdbcTemplate.queryForRowSet(SqlQueries.GET_GENRES_FOR_ALL_FILMS);
+
+        while (filmGenreIdRows.next()) {
+            int filmId = filmGenreIdRows.getInt("FILM_ID");
+            int genreId = filmGenreIdRows.getInt("GENRE_ID");
+            String genreName = filmGenreIdRows.getString("GENRE_NAME");
+
+            for (Film film : films) {
+                if (film.getId() == filmId) {
+                    List<Genre> genres = film.getGenres();
+                    if (genres == null) genres = new ArrayList<>();
+                    Genre filmGenre = Genre.builder().id(genreId).name(genreName).build();
+                    genres.add(filmGenre);
+                    film.setGenres(genres);
+                }
+            }
+        }
+
+        for (Film film : films) {
+            if (film.getGenres() == null) film.setGenres(new ArrayList<>());
+        }
+    }
+
+    private void getRatings(List<Film> films) {
+        SqlRowSet ratingIdRows = jdbcTemplate.queryForRowSet(SqlQueries.GET_RATINGS_FOR_ALL_FILMS);
+
+        while (ratingIdRows.next()) {
+            int filmId = ratingIdRows.getInt("FILM_ID");
+            int ratingId = ratingIdRows.getInt("RATING_ID");
+            String ratingName = ratingIdRows.getString("RATING_NAME");
+
+            for (Film film : films) {
+                if (film.getId() == filmId) {
+                    Rating filmRating = Rating.builder().id(ratingId).name(ratingName).build();
+                    if (filmRating != null) film.setMpa(filmRating);
+                    break;
+                }
+            }
+        }
     }
 
     private List<Genre> getFilmGenres(int filmId) {

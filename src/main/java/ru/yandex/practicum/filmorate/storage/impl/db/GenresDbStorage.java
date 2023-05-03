@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenresStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.GenreMapper;
+import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.util.List;
 

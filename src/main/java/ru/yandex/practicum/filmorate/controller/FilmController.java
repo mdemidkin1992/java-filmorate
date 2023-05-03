@@ -23,8 +23,11 @@ public class FilmController {
 
     @GetMapping
     public List<Film> getFilms() {
+        log.info("GET request for all films received");
+        List<Film> response = filmService.getFilms();
         log.info("Number of films: {}", filmService.getFilms().size());
-        return filmService.getFilms();
+        log.info("All films: {}", response);
+        return response;
     }
 
     @PostMapping

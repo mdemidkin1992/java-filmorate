@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.RatingNotFoundException;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.RatingMapper;
+import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.util.List;
 
