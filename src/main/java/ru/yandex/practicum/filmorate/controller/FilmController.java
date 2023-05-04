@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
@@ -24,8 +23,11 @@ public class FilmController {
 
     @GetMapping
     public List<Film> getFilms() {
+        log.info("GET request for all films received");
+        List<Film> response = filmService.getFilms();
         log.info("Number of films: {}", filmService.getFilms().size());
-        return filmService.getFilms();
+        log.info("All films: {}", response);
+        return response;
     }
 
     @PostMapping
@@ -48,28 +50,24 @@ public class FilmController {
     public Film getFilmById(@PathVariable("id") int filmId) {
         log.info("GET request received: film with id \"{}\"", filmId);
         Film response = filmService.getFilmById(filmId);
-        log.info("Film with id \"{}\"", response.toString());
+        log.info("Film with id \"{}\" : {}", filmId, response.toString());
         return response;
     }
 
     @PutMapping("{id}/like/{userId}")
-    public Set<Long> addLike(@PathVariable("id") int filmId,
-                             @PathVariable("userId") int userId) {
+    public void addLike(@PathVariable("id") int filmId,
+                        @PathVariable("userId") int userId) {
         log.info("PUT request received: user id \"{}\" likes film id \"{}\"", userId, filmId);
         filmService.addLike(filmId, userId);
-        Set<Long> response = filmService.getLikes(filmId);
-        log.info("Film \"{}\" updated likes list: {}", filmId, response);
-        return response;
+        log.info("Film \"{}\" added like from user \"{}\"", filmId, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public Set<Long> deleteLike(@PathVariable("id") int filmId,
-                                @PathVariable("userId") int userId) {
+    public void deleteLike(@PathVariable("id") int filmId,
+                           @PathVariable("userId") int userId) {
         log.info("DELETE request received: user id \"{}\" deletes like from film id \"{}\"", userId, filmId);
         filmService.deleteLike(filmId, userId);
-        Set<Long> response = filmService.getLikes(filmId);
-        log.info("Film \"{}\" updated likes list: {}", filmId, response);
-        return response;
+        log.info("Film \"{}\" deleted like from user \"{}\"", filmId, userId);
     }
 
     @GetMapping("/popular")

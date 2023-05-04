@@ -2,17 +2,13 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,67 +16,39 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(InMemoryUserStorage inMemoryUserStorage) {
-        this.userStorage = inMemoryUserStorage;
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     public User createUser(User user) {
-        return this.userStorage.createUser(user);
+        return userStorage.createUser(user);
     }
 
     public User updateUser(User user) {
-        return this.userStorage.updateUser(user);
+        return userStorage.updateUser(user);
     }
 
     public User getUserById(int userId) {
-        return this.userStorage.getUserById(userId);
+        return userStorage.getUserById(userId);
     }
 
     public List<User> getUsers() {
-        return new ArrayList<>(this.userStorage.getUsers().values());
+        return new ArrayList<>(userStorage.getUsers());
     }
 
-    public Set<Long> addFriend(int userId, int friendId) {
-        checkUserIds(userId, friendId);
-        userStorage.getUserById(userId).addFriend(friendId);
-        userStorage.getUserById(friendId).addFriend(userId);
-        return userStorage.getUserById(userId).getFriends();
+    public void addFriend(int userId, int friendId) {
+        userStorage.addFriend(userId, friendId);
     }
 
-    public Set<Long> deleteFriend(int userId, int friendId) {
-        checkUserIds(userId, friendId);
-        userStorage.getUserById(userId).deleteFriend(friendId);
-        userStorage.getUserById(friendId).deleteFriend(userId);
-        return userStorage.getUserById(userId).getFriends();
+    public void deleteFriend(int userId, int friendId) {
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getUserFriends(int userId) {
-        Set<Long> friendsIds = userStorage.getUserById(userId).getFriends();
-        return userStorage.getUsers().values().stream()
-                .filter(user -> friendsIds.contains((long) user.getId()))
-                .collect(Collectors.toList());
+        return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
-        Set<Long> userFriends = userStorage.getUserById(userId).getFriends();
-        Set<Long> otherUserFriends = userStorage.getUserById(otherId).getFriends();
-
-        Set<Long> intersection = new HashSet<>(userFriends);
-        intersection.retainAll(otherUserFriends);
-
-        return userStorage.getUsers().values().stream()
-                .filter(user -> intersection.contains((long) user.getId()))
-                .collect(Collectors.toList());
-    }
-
-    private void checkUserIds(int userId, int friendId) {
-        if (!userStorage.getUsers().containsKey(userId)) {
-            log.error("User with id {} doesn't exist.", userId);
-            throw new UserNotFoundException(String.format("User with id \"%s\" doesn't exist.", userId));
-        }
-        if (!userStorage.getUsers().containsKey(friendId)) {
-            log.error("User with id {} doesn't exist.", friendId);
-            throw new UserNotFoundException(String.format("User with id \"%s\" doesn't exist.", friendId));
-        }
+        return userStorage.getCommonFriends(userId, otherId);
     }
 }

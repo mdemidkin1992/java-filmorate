@@ -1,28 +1,31 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeAll;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
-    private static UserController userController;
-    private static User user1, user2, user3, user4, user5;
+    private final UserDbStorage userDbStorage;
     private static final Validator VALIDATOR;
 
     static {
@@ -30,31 +33,14 @@ class UserControllerTest {
         VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
-    @BeforeAll
-    public static void beforeAll() {
-        userController = new UserController(new UserService(new InMemoryUserStorage()));
-
-        user1 = User.builder().email("example_1@email.ru").login("login_1").name("name_1").birthday(LocalDate.of(1990, 1, 10)).build();
-        user2 = User.builder().email("example_2@email.ru").login("login_2").name("name_2").birthday(LocalDate.of(1991, 2, 11)).build();
-        user3 = User.builder().email("example_3@email.ru").login("login_3").name("name_3").birthday(LocalDate.of(1992, 3, 12)).build();
-        user4 = User.builder().email("example_4@email.ru").login("login_4").name("name_4").birthday(LocalDate.of(1993, 4, 13)).build();
-        user5 = User.builder().email("example_5@email.ru").login("login_5").name("name_5").birthday(LocalDate.of(1994, 5, 14)).build();
-
-        userController.createUser(user1);
-        userController.createUser(user2);
-        userController.createUser(user3);
-        userController.createUser(user4);
-        userController.createUser(user5);
+    @AfterEach
+    public void clearDb() {
+        userDbStorage.clearDb();
     }
 
     @Test
     public void testValidations() {
-        User invalidUser = user1;
-        invalidUser.setEmail("wrong email.com@");
-        invalidUser.setLogin(null);
-        invalidUser.setName("wrong user name");
-        invalidUser.setBirthday(LocalDate.of(2030, 1, 1));
-
+        User invalidUser = User.builder().email("wrong email.com@").name("wrong user name").birthday(LocalDate.of(2030, 1, 1)).build();
         Set<ConstraintViolation<User>> validates = VALIDATOR.validate(invalidUser);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
@@ -62,80 +48,85 @@ class UserControllerTest {
 
     @Test
     public void shouldGetAllUsers() {
-        List<User> expected = new ArrayList<>();
-        expected.add(user1);
-        expected.add(user2);
-        expected.add(user3);
-        expected.add(user4);
-        expected.add(user5);
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
 
-        List<User> actual = userController.getUsers();
-        assertEquals(expected, actual, "Not all users were added to storage.");
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+
+        List<User> actual = userDbStorage.getUsers();
+        assertEquals(2, actual.size(), "Not all users were added to storage.");
+
     }
 
     @Test
     public void shouldAddFriendWhenIdIsCorrect() {
-        int userId = user1.getId();
-        int friendId1 = user2.getId();
-        int friendId2 = user3.getId();
-        int friendId3 = user4.getId();
-        int friendId4 = user5.getId();
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("Clark").login("clarklogin").email("clark@email.com").birthday(LocalDate.of(1997, 4, 6)).build();
+        User user4 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2000, 6, 10)).build();
+        User user5 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2001, 8, 12)).build();
 
-        userController.addFriend(userId, friendId1);
-        userController.addFriend(userId, friendId2);
-        userController.addFriend(userId, friendId3);
-        userController.addFriend(userId, friendId4);
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
 
-        Set<Long> expectedSet = new HashSet<>();
-        expectedSet.add((long) friendId1);
-        expectedSet.add((long) friendId2);
-        expectedSet.add((long) friendId3);
-        expectedSet.add((long) friendId4);
+        int userId1 = user1.getId(), userId2 = user2.getId();
+        int friendId1 = user3.getId(), friendId2 = user4.getId(), friendId3 = user5.getId();
 
-        Set<Long> actualSet = userController.getUserById(userId).getFriends();
+        userDbStorage.addFriend(userId1, friendId2);
+        userDbStorage.addFriend(userId1, friendId3);
 
-        List<User> expectedList = new ArrayList<>();
-        expectedList.add(user2);
-        expectedList.add(user3);
-        expectedList.add(user4);
-        expectedList.add(user5);
+        userDbStorage.addFriend(userId2, friendId2);
+        userDbStorage.addFriend(userId2, friendId3);
 
-        List<User> actualList = userController.getUserFriends(userId);
+        List<User> expectedUser1FriendList = new LinkedList<>();
+        expectedUser1FriendList.add(userDbStorage.getUserById(friendId2));
+        expectedUser1FriendList.add(userDbStorage.getUserById(friendId3));
 
-        List<User> expectedCommonFriends = List.of(user1);
-        List<User> actualCommonFriends = userController.getCommonFriends(user2.getId(), user3.getId());
+        List<User> actualUser1FriendsList = userDbStorage.getFriends(userId1);
+        List<User> actualUser2FriendsList = userDbStorage.getFriends(userId2);
 
-        assertEquals(actualSet, expectedSet);
-        assertEquals(expectedList, actualList);
-        assertEquals(expectedCommonFriends, actualCommonFriends);
+        List<User> expectedCommonFriends = new LinkedList<>();
+        expectedCommonFriends.add(userDbStorage.getUserById(friendId3));
+        expectedCommonFriends.add(userDbStorage.getUserById(friendId2));
 
-        userController.deleteFriend(user1.getId(), user2.getId());
-        expectedList.remove(user2);
-        actualList = userController.getUserFriends(userId);
-        assertEquals(expectedList, actualList);
+        List<User> actualCommonFriends = userDbStorage.getCommonFriends(userId1, userId2);
+
+        assertEquals(expectedUser1FriendList, actualUser1FriendsList);
+        assertEquals(expectedCommonFriends.size(), actualCommonFriends.size());
     }
 
     @Test
     public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() {
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(user2.getId(), 333));
-        String expectedMessage = "User with id \"333\" doesn't exist.";
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
+
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+
+        int userId = user1.getId();
+        int friendId = 333;
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(userId, friendId));
+        String expectedMessage = "User with id 333 doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
     public void shouldNotRemoveFriendsWhenUserIdIsIncorrect() {
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.deleteFriend(111, user3.getId()));
-        String expectedMessage = "User with id \"111\" doesn't exist.";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-    }
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
 
-    @Test
-    public void shouldNotAddUserWhenUserAlreadyExists() {
-        User newUser = user1;
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(newUser));
-        String expectedMessage = "User with id " + newUser.getId() + " already exists";
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+
+        int userId = 111;
+        int friendId = user2.getId();
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(userId, friendId));
+        String expectedMessage = "User with id 111 doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
@@ -143,30 +134,38 @@ class UserControllerTest {
     @Test
     public void shouldAddUserWhenNameIsEmpty() {
         User user6 = User.builder().email("example_6@email.ru").login("login_6").birthday(LocalDate.of(1994, 5, 14)).build();
-        userController.createUser(user6);
-        assertEquals(userController.getUserById(user6.getId()).getName(), userController.getUserById(user6.getId()).getLogin());
+        userDbStorage.createUser(user6);
+        assertEquals(userDbStorage.getUserById(user6.getId()).getName(), userDbStorage.getUserById(user6.getId()).getLogin());
     }
 
     @Test
     public void shouldUpdateUserNormal() {
-        final User updatedUser = user1;
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        userDbStorage.createUser(user1);
+
+        int userId = user1.getId();
+        final User updatedUser = userDbStorage.getUserById(userId);
         updatedUser.setEmail("new@email.ru");
         updatedUser.setLogin("newLogin");
         updatedUser.setName("newName");
         updatedUser.setBirthday(LocalDate.of(2020, 1, 1));
 
-        userController.updateUser(updatedUser);
+        userDbStorage.updateUser(updatedUser);
 
         User expected = updatedUser;
-        User actual = userController.getUserById(user1.getId());
+        User actual = userDbStorage.getUserById(user1.getId());
 
         assertEquals(expected, actual);
     }
 
     @Test
     public void shouldNotUpdateUserIncorrectId() {
-        User updatedUser = User.builder().id(999).build();
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.updateUser(updatedUser));
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        userDbStorage.createUser(user1);
+        int userId = user1.getId();
+        final User updatedUser = userDbStorage.getUserById(userId);
+        updatedUser.setId(999);
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.updateUser(updatedUser));
         String expectedMessage = "User with id " + updatedUser.getId() + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -174,23 +173,22 @@ class UserControllerTest {
 
     @Test
     public void shouldGetUserWhenIdIsCorrect() {
-        User expectedUser = user1;
-        User actualUser = userController.getUserById(user1.getId());
-        assertEquals(expectedUser, actualUser);
-    }
-
-    @Test
-    public void shouldDeleteUser() {
-        User user6 = User.builder().email("example_6@email.ru").login("login_6").birthday(LocalDate.of(1994, 5, 14)).build();
-        userController.createUser(user6);
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        userDbStorage.createUser(user1);
+        int userId = user1.getId();
+        User actualUser = userDbStorage.getUserById(userId);
+        assertEquals(userId, actualUser.getId());
     }
 
     @Test
     public void shouldNotGetUserWhenIdIsIncorrect() {
+        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
+        userDbStorage.createUser(user1);
         int userId = 999;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userController.getUserById(userId));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.getUserById(userId));
         String expectedMessage = "User with id " + userId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
+
 }

@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
@@ -24,12 +23,12 @@ public class UserController {
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Number of users: {}", userService.getUsers().size());
+        log.info("Number of users: \"{}\"", userService.getUsers().size());
         return userService.getUsers();
     }
 
     @GetMapping("{id}")
-    public User getUserById(@PathVariable("id") Integer userId) {
+    public User getUserById(@PathVariable("id") int userId) {
         log.info("GET request received: user with id \"{}\"", userId);
         User response = userService.getUserById(userId);
         log.info("User with id \"{}\": \"{}\"", userId, response.toString());
@@ -38,36 +37,34 @@ public class UserController {
 
     @PostMapping
     public User createUser(@NotNull @RequestBody @Valid User user) {
-        log.info("POST request received: {}", user);
+        log.info("POST request received: \"{}\"", user);
         User response = userService.createUser(user);
-        log.info("Added user: {}", response.toString());
+        log.info("Added user: \"{}\"", response.toString());
         return response;
     }
 
     @PutMapping
     public User updateUser(@NotNull @RequestBody @Valid User user) {
-        log.info("PUT request received: {}", user);
+        log.info("PUT request received: \"{}\"", user);
         User response = userService.updateUser(user);
-        log.info("Updated user: {}", response.toString());
+        log.info("Updated user: \"{}\"", response.toString());
         return response;
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public Set<Long> addFriend(@PathVariable("id") int userId,
-                               @PathVariable("friendId") int friendId) {
+    public void addFriend(@PathVariable("id") int userId,
+                          @PathVariable("friendId") int friendId) {
         log.info("PUT request received: user id \"{}\" adds friend id \"{}\"", userId, friendId);
-        Set<Long> response = userService.addFriend(userId, friendId);
-        log.info("User {} updated friends list: {}", userId, response);
-        return response;
+        userService.addFriend(userId, friendId);
+        log.info("User \"{}\" added friend \"{}\"", userId, friendId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
-    public Set<Long> deleteFriend(@PathVariable("id") int userId,
-                                  @PathVariable("friendId") int friendId) {
+    public void deleteFriend(@PathVariable("id") int userId,
+                             @PathVariable("friendId") int friendId) {
         log.info("DELETE request received: user id \"{}\" deletes friend id \"{}\"", userId, friendId);
-        Set<Long> response = userService.deleteFriend(userId, friendId);
-        log.info("User {} updated friends list: {}", userId, response);
-        return response;
+        userService.deleteFriend(userId, friendId);
+        log.info("User \"{}\" deleted friend \"{}\"", userId, friendId);
     }
 
     @GetMapping("{id}/friends")
@@ -85,5 +82,10 @@ public class UserController {
         List<User> response = userService.getCommonFriends(userId, otherId);
         log.info("Users \"{}\" and \"{}\" common friends: \"{}\"", userId, otherId, response);
         return response;
+    }
+
+    @DeleteMapping
+    public void deleteUser(@NotNull @RequestBody User user) {
+
     }
 }
