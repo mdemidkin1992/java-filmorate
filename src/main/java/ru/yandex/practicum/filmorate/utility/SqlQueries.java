@@ -17,7 +17,6 @@ public final class SqlQueries {
     public static final String DELETE_FRIEND = "DELETE FROM FRIENDS WHERE USER_ONE_ID = ? AND USER_TWO_ID = ?";
 
     // FILMS
-    public static final String GET_FILMS = "SELECT * FROM FILMS";
     public static final String GET_FILM = "SELECT * FROM FILMS f WHERE FILM_ID = ?";
     public static final String GET_FILM_RATING = "SELECT r.RATING_ID, r.RATING_NAME FROM RATINGS r JOIN FILMS f ON r.RATING_ID = f.RATING_ID WHERE f.FILM_ID = ?";
     public static final String GET_FILM_GENRES = "SELECT g.GENRE_ID, g.GENRE_NAME FROM GENRES g JOIN FILMS_GENRES fg ON g.GENRE_ID = fg.GENRE_ID JOIN FILMS f ON fg.FILM_ID = f.FILM_ID WHERE f.FILM_ID = ?";
@@ -27,6 +26,7 @@ public final class SqlQueries {
     public static final String DELETE_FILMS_GENRES = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
     public static final String GET_GENRES_FOR_ALL_FILMS = "SELECT * FROM FILMS_GENRES fg JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID";
     public static final String GET_RATINGS_FOR_ALL_FILMS = "SELECT * FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID";
+    public static final String GET_FILMS_WITH_GENRES = "FROM FILMS F JOIN MPAS AS M ON F.MPA = M.ID LEFT JOIN FILM_GENRES AS FG ON f.ID = FG.FILM_ID LEFT JOIN GENRES AS G2 on G2.ID = FG.GENRE_ID";
 
     // LIKES
     public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";

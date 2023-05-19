@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
@@ -78,10 +79,48 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        List<Film> allFilms = jdbcTemplate.query(SqlQueries.GET_FILMS, new FilmMapper());
-        getGenres(allFilms);
-        getRatings(allFilms);
-        return allFilms;
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(SqlQueries.GET_FILMS_WITH_GENRES);
+        List<Film> filmList = new ArrayList<>();
+        Film film = null;
+        List<Genre> genreSet = new ArrayList<>();
+        while (rs.next()) {
+            int filmId = rs.getInt("id");
+            if (Objects.isNull(film)) {
+                film = makeFilm(rs);
+            } else if (film.getId() != filmId) {
+                film.setGenres(genreSet);
+                filmList.add(film);
+                film = makeFilm(rs);
+                genreSet = new ArrayList<>();
+            }
+            genreSet.add(makeGenre(rs));
+
+        }
+        if (film != null) {
+            filmList.add(film);
+        }
+        return filmList;
+    }
+
+    private Film makeFilm(SqlRowSet rs) {
+        return Film.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .releaseDate(Objects.requireNonNull(rs.getDate("release_date")).toLocalDate())
+                .duration(rs.getInt("duration"))
+                .mpa(Rating.builder()
+                        .id(rs.getInt("mpa"))
+                        .name(rs.getString("code"))
+                        .build())
+                .build();
+    }
+
+    private Genre makeGenre(SqlRowSet rs) {
+        return Genre.builder()
+                .id(rs.getInt(11))
+                .name(rs.getString(12))
+                .build();
     }
 
     @Override
