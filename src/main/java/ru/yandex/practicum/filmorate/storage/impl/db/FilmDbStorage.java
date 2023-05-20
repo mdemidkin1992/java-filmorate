@@ -24,7 +24,6 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
@@ -79,48 +78,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(SqlQueries.GET_FILMS_WITH_GENRES);
-        List<Film> filmList = new ArrayList<>();
-        Film film = null;
-        List<Genre> genreSet = new ArrayList<>();
-        while (rs.next()) {
-            int filmId = rs.getInt("id");
-            if (Objects.isNull(film)) {
-                film = makeFilm(rs);
-            } else if (film.getId() != filmId) {
-                film.setGenres(genreSet);
-                filmList.add(film);
-                film = makeFilm(rs);
-                genreSet = new ArrayList<>();
-            }
-            genreSet.add(makeGenre(rs));
-
-        }
-        if (film != null) {
-            filmList.add(film);
-        }
-        return filmList;
-    }
-
-    private Film makeFilm(SqlRowSet rs) {
-        return Film.builder()
-                .id(rs.getInt("id"))
-                .name(rs.getString("name"))
-                .description(rs.getString("description"))
-                .releaseDate(Objects.requireNonNull(rs.getDate("release_date")).toLocalDate())
-                .duration(rs.getInt("duration"))
-                .mpa(Rating.builder()
-                        .id(rs.getInt("mpa"))
-                        .name(rs.getString("code"))
-                        .build())
-                .build();
-    }
-
-    private Genre makeGenre(SqlRowSet rs) {
-        return Genre.builder()
-                .id(rs.getInt(11))
-                .name(rs.getString(12))
-                .build();
+        String sql = SqlQueries.GET_FILMS_WITH_GENRES;
+        List<Film> allFilms = jdbcTemplate.query(sql, new FilmMapper());
+        getGenres(allFilms, sql);
+        getRatings(allFilms, sql);
+        return allFilms;
     }
 
     @Override
@@ -139,14 +101,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS, new FilmMapper());
-        getRatings(popularFilms);
-        getGenres(popularFilms);
+        String sql = SqlQueries.GET_POPULAR_FILMS_WITH_GENRES;
+        List<Film> popularFilms = jdbcTemplate.query(sql, new FilmMapper());
+        getRatings(popularFilms, sql);
+        getGenres(popularFilms, sql);
         return popularFilms.stream().limit(count).collect(Collectors.toList());
     }
 
-    private void getGenres(List<Film> films) {
-        SqlRowSet filmGenreIdRows = jdbcTemplate.queryForRowSet(SqlQueries.GET_GENRES_FOR_ALL_FILMS);
+    private void getGenres(List<Film> films, String sql) {
+        SqlRowSet filmGenreIdRows = jdbcTemplate.queryForRowSet(sql);
 
         while (filmGenreIdRows.next()) {
             int filmId = filmGenreIdRows.getInt("FILM_ID");
@@ -156,9 +119,12 @@ public class FilmDbStorage implements FilmStorage {
             for (Film film : films) {
                 if (film.getId() == filmId) {
                     List<Genre> genres = film.getGenres();
-                    if (genres == null) genres = new ArrayList<>();
-                    Genre filmGenre = Genre.builder().id(genreId).name(genreName).build();
-                    genres.add(filmGenre);
+                    if (genres == null)
+                        genres = new ArrayList<>();
+                    if (genreId != 0 && genreName != null) {
+                        Genre filmGenre = Genre.builder().id(genreId).name(genreName).build();
+                        genres.add(filmGenre);
+                    }
                     film.setGenres(genres);
                 }
             }
@@ -169,8 +135,8 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private void getRatings(List<Film> films) {
-        SqlRowSet ratingIdRows = jdbcTemplate.queryForRowSet(SqlQueries.GET_RATINGS_FOR_ALL_FILMS);
+    private void getRatings(List<Film> films, String sql) {
+        SqlRowSet ratingIdRows = jdbcTemplate.queryForRowSet(sql);
 
         while (ratingIdRows.next()) {
             int filmId = ratingIdRows.getInt("FILM_ID");
