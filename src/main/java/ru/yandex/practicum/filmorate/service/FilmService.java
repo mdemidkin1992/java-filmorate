@@ -70,4 +70,15 @@ public class FilmService {
     public Genre getGenreById(int genreId) {
         return genresStorage.getGenreById(genreId);
     }
+
+    public List<Film> searchFilmsByTitleOrDirector(String query, String by) {
+        String formattedBy = by.toUpperCase()
+                .replaceAll("\\s", "")
+                .replace(",", "-");
+        return filmStorage.findFilmsByTitleOrDirector(query.toLowerCase(), formattedBy);
+    }
+
+    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
+        return filmStorage.findAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy.toUpperCase());
+    }
 }

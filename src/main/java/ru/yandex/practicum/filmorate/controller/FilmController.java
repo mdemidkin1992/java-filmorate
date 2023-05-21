@@ -79,4 +79,22 @@ public class FilmController {
         log.info("Most popular films: {}", response);
         return response;
     }
+
+    @GetMapping("/search")
+    public List<Film> searchFilmsByTitleOrDirector(
+            @RequestParam String query, @RequestParam String by) {
+        log.info("GET request received: search films {} by {}", query, by);
+        List<Film> response = filmService.searchFilmsByTitleOrDirector(query, by);
+        log.info("Found films: {}", response);
+        return response;
+    }
+
+    @GetMapping("/director/{id}")
+    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(
+            @PathVariable("id") int directorId, @RequestParam String sortBy) {
+        log.info("GET request received: get all films by director id \"{}\", sorting by \"{}\"", directorId, sortBy);
+        List<Film> response = filmService.getAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy);
+        log.info("Found films: {}", response);
+        return response;
+    }
 }
