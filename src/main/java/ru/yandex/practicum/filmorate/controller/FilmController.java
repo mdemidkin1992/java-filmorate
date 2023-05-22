@@ -80,6 +80,16 @@ public class FilmController {
         return response;
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam int userId, @RequestParam int friendId
+    ) {
+        log.info("GET request received: users {} and {} common films", userId, friendId);
+        List<Film> response = filmService.getCommonFilms(userId, friendId);
+        log.info("Common films: {}", response);
+        return response;
+    }
+
     @GetMapping("/popular?count={limit}&genreId={genreId}&year={year}")
     public List<Film> getPopularFilmsByGenreIdAndYear(@PathVariable("limit") int count,
                                                       @PathVariable("genreId") int genreId,
