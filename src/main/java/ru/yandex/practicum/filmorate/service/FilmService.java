@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.aspects.annotation.SaveUserEvent;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenresStorage;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
@@ -43,10 +46,12 @@ public class FilmService {
         return filmStorage.getFilms();
     }
 
+    @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.ADD, entityIdParamName = "filmId")
     public void addLike(int filmId, int userId) {
         filmStorage.addLike(filmId, userId);
     }
 
+    @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.REMOVE, entityIdParamName = "filmId")
     public void deleteLike(int filmId, int userId) {
         filmStorage.deleteLike(filmId, userId);
     }
