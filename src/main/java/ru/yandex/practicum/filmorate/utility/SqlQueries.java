@@ -11,7 +11,8 @@ public final class SqlQueries {
     public static final String ADD_USER = "INSERT INTO APP_USERS (USER_NAME, LOGIN, EMAIL, BIRTHDAY) VALUES(?, ?, ?, ?)";
     public static final String UPDATE_USER = "UPDATE APP_USERS SET USER_NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? " +
             "WHERE USER_ID = ?";
-    public static final String GET_USERS_LIKES = "SELECT * FROM APP_USERS au JOIN LIKES l ON au.USER_ID = l.USER_ID JOIN FILMS f ON f.FILM_ID = l.FILM_ID";
+    public static final String GET_USERS_LIKES = "SELECT * FROM APP_USERS au JOIN LIKES l ON au.USER_ID = l.USER_ID " +
+            "JOIN FILMS f ON f.FILM_ID = l.FILM_ID";
 
     // FRIENDS
     public static final String GET_FRIENDS = "SELECT * FROM APP_USERS au JOIN FRIENDS f ON au.USER_ID = f.USER_TWO_ID " +
@@ -85,13 +86,18 @@ public final class SqlQueries {
 
     // REVIEWS
     public static final String GET_REVIEWS = "SELECT * FROM REVIEWS_VIEW ORDER BY USEFUL DESC LIMIT ?";
-    public static final String GET_REVIEWS_FOR_FILM = "SELECT * FROM REVIEWS_VIEW WHERE FILM_ID = ? ORDER BY USEFUL DESC LIMIT ?";
+    public static final String GET_REVIEWS_FOR_FILM = "SELECT * FROM REVIEWS_VIEW WHERE FILM_ID = ? ORDER BY USEFUL " +
+            "DESC LIMIT ?";
     public static final String ADD_REVIEW = "INSERT INTO REVIEWS (FILM_ID, USER_ID, CONTENT, IS_POSITIVE) VALUES(?, ?, ?, ?)";
     public static final String GET_REVIEW = "SELECT * FROM REVIEWS_VIEW WHERE REVIEW_ID = ?";
     public static final String UPDATE_REVIEW = "UPDATE REVIEWS SET CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?";
     public static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
-    public static final String ADD_REVIEW_LIKE = "INSERT INTO REVIEWS_RATING (REVIEW_ID, USER_ID, IS_REVIEW_POSITIVE) VALUES (?, ?, true)";
-    public static final String ADD_REVIEW_DISLIKE = "INSERT INTO REVIEWS_RATING (REVIEW_ID, USER_ID, IS_REVIEW_POSITIVE) VALUES (?, ?, false)";
-    public static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? IS_REVIEW_POSITIVE = true";
-    public static final String DELETE_REVIEW_DISLIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? IS_REVIEW_POSITIVE = false";
+    public static final String ADD_REVIEW_LIKE = "INSERT INTO REVIEWS_RATING (REVIEW_ID, USER_ID, IS_REVIEW_POSITIVE) " +
+            "VALUES (?, ?, true)";
+    public static final String ADD_REVIEW_DISLIKE = "INSERT INTO REVIEWS_RATING (REVIEW_ID, USER_ID, IS_REVIEW_POSITIVE)" +
+            " VALUES (?, ?, false)";
+    public static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? " +
+            "IS_REVIEW_POSITIVE = true";
+    public static final String DELETE_REVIEW_DISLIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? " +
+            "IS_REVIEW_POSITIVE = false";
 }

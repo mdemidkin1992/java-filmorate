@@ -70,12 +70,22 @@ public class FilmController {
         log.info("Film \"{}\" deleted like from user \"{}\"", filmId, userId);
     }
 
-    @GetMapping("/popular")
+    /*@GetMapping("/popular")
     public List<Film> getPopularFilms(
             @RequestParam(defaultValue = "10", required = false) int count
     ) {
         log.info("GET request received: top-{} popular films", count);
         List<Film> response = filmService.getPopularFilms(count);
+        log.info("Most popular films: {}", response);
+        return response;
+    }*/
+
+    @GetMapping("/popular?count={limit}&genreId={genreId}&year={year}")
+    public List<Film> getPopularFilmsByGenreIdAndYear(@PathVariable("limit") int count,
+                                                      @PathVariable("genreId") int genreId,
+                                                      @PathVariable("year") int year) {
+        log.info("GET request received: top-{} popular films with {} genre and had done in {} year", count, genreId, year);
+        List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
         log.info("Most popular films: {}", response);
         return response;
     }
@@ -87,16 +97,6 @@ public class FilmController {
         log.info("GET request received: users {} and {} common films", userId, friendId);
         List<Film> response = filmService.getCommonFilms(userId, friendId);
         log.info("Common films: {}", response);
-        return response;
-    }
-
-    @GetMapping("/popular?count={limit}&genreId={genreId}&year={year}")
-    public List<Film> getPopularFilmsByGenreIdAndYear(@PathVariable("limit") int count,
-                                                      @PathVariable("genreId") int genreId,
-                                                      @PathVariable("year") int year) {
-        log.info("GET request received: top-{} popular films with {} genre and had done in {} year", count, genreId, year);
-        List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
-        log.info("Most popular films: {}", response);
         return response;
     }
 
