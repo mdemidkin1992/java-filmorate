@@ -23,7 +23,10 @@ import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
@@ -113,20 +116,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findFilmsByTitleOrDirector(String query, String by) {
-        List<Film> foundFilms = Collections.emptyList();
-        switch (by) {
-            case "TITLE":
-                foundFilms = jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_NAME, new FilmMapper(), "%" + query + "%");
-                getRatings(foundFilms);
-                getGenres(foundFilms);
-                break;
-            case "DIRECTOR":
-                foundFilms = jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_DIRECTOR, new FilmMapper(), "%" + query + "%");
-                getRatings(foundFilms);
-                getGenres(foundFilms);
-                break;
-        }
+    public List<Film> findFilmsByTitle(String query) {
+        List<Film> foundFilms = jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_NAME,
+                new FilmMapper(), "%" + query + "%");
+        getRatings(foundFilms);
+        getGenres(foundFilms);
+        getDirectors(foundFilms);
+        return foundFilms;
+    }
+
+    @Override
+    public List<Film> findFilmsByDirector(String query) {
+        List<Film> foundFilms = jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_DIRECTOR,
+                new FilmMapper(), "%" + query + "%");
+        getRatings(foundFilms);
+        getGenres(foundFilms);
+        getDirectors(foundFilms);
+        return foundFilms;
+    }
+
+    @Override
+    public List<Film> findFilmsByTitleOrDirector(String query) {
+        List<Film> foundFilms = jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_NAME_OR_DIRECTOR,
+                new FilmMapper(), "%" + query + "%", "%" + query + "%");
+        getRatings(foundFilms);
+        getGenres(foundFilms);
+        getDirectors(foundFilms);
         return foundFilms;
     }
 

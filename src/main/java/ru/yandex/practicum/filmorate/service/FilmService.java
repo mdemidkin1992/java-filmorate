@@ -75,10 +75,15 @@ public class FilmService {
     }
 
     public List<Film> searchFilmsByTitleOrDirector(String query, String by) {
-        String formattedBy = by.toUpperCase()
-                .replaceAll("\\s", "")
-                .replace(",", "-");
-        return filmStorage.findFilmsByTitleOrDirector(query.toLowerCase(), formattedBy);
+        String formattedBy = by.toUpperCase().replaceAll("\\s", "");
+        switch (formattedBy) {
+            case "TITLE":
+                return filmStorage.findFilmsByTitle(query.toLowerCase());
+            case "DIRECTOR":
+                return filmStorage.findFilmsByDirector(query.toLowerCase());
+            default:
+                return filmStorage.findFilmsByTitleOrDirector(query.toLowerCase());
+        }
     }
 
     public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
