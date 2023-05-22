@@ -113,6 +113,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilmsByGenreIdAndYear(int count, int genreId, int year) {
+        List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR, new FilmMapper(),
+                genreId, year, count);
+        getRatings(popularFilms);
+        getGenres(popularFilms);
+        return popularFilms;
+    }
+
+    @Override
     public List<Film> findFilmsByTitleOrDirector(String query, String by) {
         List<Film> foundFilms = Collections.emptyList();
         switch (by) {

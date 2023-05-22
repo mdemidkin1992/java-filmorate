@@ -80,6 +80,16 @@ public class FilmController {
         return response;
     }
 
+    @GetMapping("/popular?count={limit}&genreId={genreId}&year={year}")
+    public List<Film> getPopularFilmsByGenreIdAndYear(@PathVariable("limit") int count,
+                                                      @PathVariable("genreId") int genreId,
+                                                      @PathVariable("year") int year) {
+        log.info("GET request received: top-{} popular films with {} genre and had done in {} year", count, genreId, year);
+        List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
+        log.info("Most popular films: {}", response);
+        return response;
+    }
+
     @GetMapping("/search")
     public List<Film> searchFilmsByTitleOrDirector(
             @RequestParam String query, @RequestParam String by) {

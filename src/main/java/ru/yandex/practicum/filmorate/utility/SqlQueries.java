@@ -41,6 +41,10 @@ public final class SqlQueries {
     public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     public static final String DELETE_LIKE = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
     public static final String GET_POPULAR_FILMS = "SELECT * FROM FILMS f LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS likes_count FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID ORDER BY temp.LIKES_COUNT DESC;";
+    public static final String GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR = "SELECT f.*, r.* FROM FILMS AS f " +
+            "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?), " +
+            "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE)) = ? LEFT JOIN LIKES AS l ON f.FILM_ID = l.FILM_ID " +
+            "JOIN RATINGS AS r ON f.FILM_ID = r.FILM_ID GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
 
     // RATINGS
     public static final String GET_RATINGS = "SELECT * FROM RATINGS";
