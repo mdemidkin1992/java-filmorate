@@ -152,12 +152,21 @@ public class FilmDbStorage implements FilmStorage {
         return foundFilms;
     }
 
+    @Override
+    public List<Film> getFilmsLikedByUser(int userId) {
+        List<Film> filmsLikedByUser = jdbcTemplate.query(SqlQueries.GET_USERS_LIKES + " WHERE au.USER_ID = ?", new FilmMapper(), userId);
+        getRatings(filmsLikedByUser);
+        getGenres(filmsLikedByUser);
+        getDirectors(filmsLikedByUser);
+        return filmsLikedByUser;
+    }
+
     private void updateFilmDirectors(Film film) {
         film.getDirectors().forEach(director ->
                 jdbcTemplate.update(SqlQueries.ADD_FILMS_DIRECTORS, film.getId(), director.getId()));
     }
 
-    private void getGenres(List<Film> films) {
+    protected void getGenres(List<Film> films) {
         SqlRowSet filmGenreIdRows = jdbcTemplate.queryForRowSet(SqlQueries.GET_GENRES_FOR_ALL_FILMS);
 
         while (filmGenreIdRows.next()) {

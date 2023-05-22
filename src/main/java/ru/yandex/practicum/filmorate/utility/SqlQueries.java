@@ -10,6 +10,7 @@ public final class SqlQueries {
     public static final String GET_USER = "SELECT * FROM APP_USERS WHERE USER_ID = ?";
     public static final String ADD_USER = "INSERT INTO APP_USERS (USER_NAME, LOGIN, EMAIL, BIRTHDAY) VALUES(?, ?, ?, ?)";
     public static final String UPDATE_USER = "UPDATE APP_USERS SET USER_NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? WHERE USER_ID = ?";
+    public static final String GET_USERS_LIKES = "SELECT * FROM APP_USERS au JOIN LIKES l ON au.USER_ID = l.USER_ID JOIN FILMS f ON f.FILM_ID = l.FILM_ID";
 
     // FRIENDS
     public static final String GET_FRIENDS = "SELECT * FROM APP_USERS au JOIN FRIENDS f ON au.USER_ID = f.USER_TWO_ID WHERE f.USER_ONE_ID = ?";
