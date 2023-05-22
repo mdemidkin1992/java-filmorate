@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -49,7 +48,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        checkFilmId(film.getId());
+        getFilmById(film.getId());
         jdbcTemplate.update(SqlQueries.UPDATE_FILM,
                 film.getName(),
                 film.getDescription(),
@@ -93,15 +92,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        checkUserId(userId);
-        checkFilmId(filmId);
+        userStorage.getUserById(userId);
+        getFilmById(filmId);
         jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId, userId);
     }
 
     @Override
     public void deleteLike(int filmId, int userId) {
-        checkUserId(userId);
-        checkFilmId(filmId);
+        userStorage.getUserById(userId);
+        getFilmById(filmId);
         jdbcTemplate.update(SqlQueries.DELETE_LIKE, filmId, userId);
     }
 
@@ -253,20 +252,6 @@ public class FilmDbStorage implements FilmStorage {
             return stmt;
         }, keyHolder);
         film.setId(keyHolder.getKey().intValue());
-    }
-
-    private void checkUserId(int userId) {
-        if (userStorage.getUserById(userId) == null) {
-            log.error("User with id {} doesn't exist", userId);
-            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
-        }
-    }
-
-    private void checkFilmId(int filmId) {
-        if (getFilmById(filmId) == null) {
-            log.error("Film with id {} doesn't exist", filmId);
-            throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
-        }
     }
 
     public void clearDb() {

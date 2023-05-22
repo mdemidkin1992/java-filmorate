@@ -25,7 +25,7 @@ public class FilmController {
     public List<Film> getFilms() {
         log.info("GET request for all films received");
         List<Film> response = filmService.getFilms();
-        log.info("Number of films: {}", filmService.getFilms().size());
+        log.info("Number of films: {}", response.size());
         log.info("All films: {}", response);
         return response;
     }

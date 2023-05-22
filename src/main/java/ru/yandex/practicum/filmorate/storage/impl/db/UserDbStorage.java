@@ -40,7 +40,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        checkUserById(user.getId());
+        getUserById(user.getId());
         jdbcTemplate.update(SqlQueries.UPDATE_USER,
                 user.getName(),
                 user.getLogin(),
@@ -72,15 +72,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        checkUserById(userId);
-        checkUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update(SqlQueries.ADD_FRIEND, userId, friendId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
-        checkUserById(userId);
-        checkUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update(SqlQueries.DELETE_FRIEND, userId, friendId);
     }
 
@@ -93,13 +93,6 @@ public class UserDbStorage implements UserStorage {
         intersection.retainAll(otherFriends);
 
         return new ArrayList<>(intersection);
-    }
-
-    private void checkUserById(int userId) {
-        if (getUserById(userId) == null) {
-            log.error("User with id {} doesn't exist", userId);
-            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
-        }
     }
 
     private void addUserToDb(User user) {
