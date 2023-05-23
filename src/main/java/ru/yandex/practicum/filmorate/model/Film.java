@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.validator.ReleaseDateConstraint;
@@ -38,13 +39,8 @@ public class Film {
 
     Rating mpa;
 
+    @JsonIgnore
     private final Set<Long> likes = new HashSet<>();
 
-    public void addLike(int userId) {
-        this.likes.add((long) userId);
-    }
-
-    public void deleteLike(int userId) {
-        this.likes.remove((long) userId);
-    }
+    private final Set<Director> directors = new HashSet<>();
 }

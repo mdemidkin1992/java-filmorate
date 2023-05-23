@@ -14,7 +14,10 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenresStorage;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -74,5 +77,26 @@ public class FilmService {
 
     public Genre getGenreById(int genreId) {
         return genresStorage.getGenreById(genreId);
+    }
+
+    public List<Film> searchFilmsByTitleOrDirector(String query, String by) {
+        String formattedBy = by.toUpperCase()
+                .replaceAll("\\s", "")
+                .replace(",", "-");
+        return filmStorage.findFilmsByTitleOrDirector(query.toLowerCase(), formattedBy);
+    }
+
+    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
+        return filmStorage.findAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy.toUpperCase());
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        List<Film> userFilms = filmStorage.getFilmsLikedByUser(userId);
+        List<Film> friendFilms = filmStorage.getFilmsLikedByUser(friendId);
+
+        Set<Film> intersection = new HashSet<>(userFilms);
+        intersection.retainAll(friendFilms);
+
+        return new ArrayList<>(intersection);
     }
 }

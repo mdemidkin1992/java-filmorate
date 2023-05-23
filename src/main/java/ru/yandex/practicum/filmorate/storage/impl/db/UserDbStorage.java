@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.UserMapper;
@@ -13,10 +15,8 @@ import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("userDbStorage")
 @Slf4j
@@ -40,7 +40,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        checkUserById(user.getId());
+        getUserById(user.getId());
         jdbcTemplate.update(SqlQueries.UPDATE_USER,
                 user.getName(),
                 user.getLogin(),
@@ -72,15 +72,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        checkUserById(userId);
-        checkUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update(SqlQueries.ADD_FRIEND, userId, friendId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
-        checkUserById(userId);
-        checkUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update(SqlQueries.DELETE_FRIEND, userId, friendId);
     }
 
@@ -95,11 +95,39 @@ public class UserDbStorage implements UserStorage {
         return new ArrayList<>(intersection);
     }
 
-    private void checkUserById(int userId) {
-        if (getUserById(userId) == null) {
-            log.error("User with id {} doesn't exist", userId);
-            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
+    @Override
+    public int getOtherUserIdWithCommonInterests(int userId) {
+        Map<Integer, List<Integer>> userLikes = new HashMap<>();
+        List<Film> recommendations = new ArrayList<>();
+        SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM LIKES");
+
+        while (rs.next()) {
+            int userDbId = rs.getInt("USER_ID");
+            int filmDbId = rs.getInt("FILM_ID");
+
+            List<Integer> likes = userLikes.getOrDefault(userDbId, new ArrayList<>());
+            likes.add(filmDbId);
+            userLikes.put(userDbId, likes);
         }
+
+        List<Integer> likedFilms = userLikes.get(userId);
+        int maxCount = Integer.MIN_VALUE;
+        int otherUserIdWithCommonInterests = -1;
+
+        for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
+            if (entry.getKey() != userId) {
+                List<Integer> otherUserLikes = entry.getValue();
+                List<Integer> intersection = likedFilms.stream().filter(otherUserLikes::contains).collect(Collectors.toList());
+                int intersectionCount = intersection.size();
+
+                if (intersectionCount > maxCount) {
+                    maxCount = intersectionCount;
+                    otherUserIdWithCommonInterests = entry.getKey();
+                }
+            }
+        }
+
+        return otherUserIdWithCommonInterests;
     }
 
     private void addUserToDb(User user) {
