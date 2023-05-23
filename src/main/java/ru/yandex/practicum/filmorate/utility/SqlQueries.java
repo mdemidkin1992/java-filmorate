@@ -56,7 +56,11 @@ public final class SqlQueries {
 
     public static final String GET_USER_EVENTS =
             "SELECT EVENT_ID, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID, EVENT_TIMESTAMP FROM EVENTS WHERE USER_ID = ?"
-                    + "ORDER BY EVENT_TIMESTAMP DESC";
+                    + "ORDER BY EVENT_TIMESTAMP";
+
+    public static final String GET_USER_EVENT_BY_ENTITY_ID_AND_EVENT_TYPE =
+            "SELECT EVENT_ID, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID, EVENT_TIMESTAMP FROM EVENTS "
+                    + "WHERE ENTITY_ID = ? AND EVENT_TYPE = ? AND OPERATION = ?";
 
     // DIRECTORS
     public static final String GET_DIRECTORS = "SELECT * FROM DIRECTORS";

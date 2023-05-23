@@ -5,7 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EventNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.utility.SqlQueries;
@@ -42,5 +45,23 @@ public class EventDbStorage implements EventStorage {
     public List<Event> getUserEvents(int userId) {
         return jdbcTemplate
                 .query(SqlQueries.GET_USER_EVENTS, new EventMapper(), userId);
+    }
+
+    @Override
+    public Event getEvent(
+            int entityId, EventType eventType, OperationType operationType
+    ) throws EventNotFoundException {
+        return jdbcTemplate.query(
+                        SqlQueries.GET_USER_EVENT_BY_ENTITY_ID_AND_EVENT_TYPE,
+                        new EventMapper(),
+                        entityId, eventType.name(), operationType.name()
+                ).stream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new EventNotFoundException(
+                                "Event with entityId = " + entityId + " eventType = " + eventType
+                                        + " operationType = " + operationType + " not found"
+                        )
+                );
     }
 }

@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SaveUserEvent {
@@ -17,5 +18,11 @@ public @interface SaveUserEvent {
 
     String userIdParamName() default "userId";
 
-    String entityIdParamName();
+    String entityIdParamName() default None.NONE_PARAM;
+
+    Class<?> entityClass() default None.class;
+
+    class None {
+        public static final String NONE_PARAM = "-";
+    }
 }
