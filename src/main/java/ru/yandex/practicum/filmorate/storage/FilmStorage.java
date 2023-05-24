@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 
 public interface FilmStorage {
@@ -17,9 +18,9 @@ public interface FilmStorage {
 
     void deleteLike(int filmId, int userId);
 
-    List<Film> getPopularFilms(int count);
+    //List<Film> getPopularFilms(int count);
 
-    List<Film> getPopularFilmsByGenreIdAndYear(int count, int genreId, int year);
+    List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year);
 
     List<Film> findFilmsByTitleOrDirector(String query, String by);
 

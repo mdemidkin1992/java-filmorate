@@ -70,6 +70,17 @@ public class FilmController {
         log.info("Film \"{}\" deleted like from user \"{}\"", filmId, userId);
     }
 
+    @GetMapping("/popular")
+    public List<Film> getPopularFilmsByGenreIdAndYear(@RequestParam(defaultValue = "10", required = false) int count,
+                                                      @RequestParam(required = false) Integer genreId,
+                                                      @RequestParam(required = false) Integer year) {
+        log.info("GET request for count = {} genreId = {} release year = {}", count, genreId, year);
+        List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
+        log.info("Number of films: {}", response.size());
+        log.info("Most popular films: {}", response);
+        return response;
+    }
+
     /*@GetMapping("/popular")
     public List<Film> getPopularFilms(
             @RequestParam(defaultValue = "10", required = false) int count
@@ -78,7 +89,7 @@ public class FilmController {
         List<Film> response = filmService.getPopularFilms(count);
         log.info("Most popular films: {}", response);
         return response;
-    }*/
+    }
 
     @GetMapping("/popular?count={limit}&genreId={genreId}&year={year}")
     public List<Film> getPopularFilmsByGenreIdAndYear(@PathVariable("limit") int count,
@@ -88,7 +99,7 @@ public class FilmController {
         List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
         log.info("Most popular films: {}", response);
         return response;
-    }
+    }*/
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(

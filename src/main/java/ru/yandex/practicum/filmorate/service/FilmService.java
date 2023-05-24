@@ -55,11 +55,12 @@ public class FilmService {
         filmStorage.deleteLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    /*public List<Film> getPopularFilms(int count) {
         return filmStorage.getPopularFilms(count);
-    }
+    }*/
 
-    public List<Film> getPopularFilmsByGenreIdAndYear(int count, int genreId, int year) {
+    public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
+
         return filmStorage.getPopularFilmsByGenreIdAndYear(count, genreId, year);
     }
 

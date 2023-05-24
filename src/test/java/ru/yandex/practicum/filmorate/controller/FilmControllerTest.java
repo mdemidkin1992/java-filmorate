@@ -126,7 +126,7 @@ class FilmControllerTest {
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
 
-        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilms(count);
+        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
         assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
 
         filmDbStorage.deleteLike(filmId1, userId1);
@@ -135,7 +135,7 @@ class FilmControllerTest {
         expectedPopularFilms.clear();
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
-        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilms(count));
+        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
     }
 
     @Test

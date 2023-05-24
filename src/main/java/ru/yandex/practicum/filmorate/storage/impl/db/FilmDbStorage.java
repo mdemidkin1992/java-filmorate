@@ -104,7 +104,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(SqlQueries.DELETE_LIKE, filmId, userId);
     }
 
-    @Override
+    /*@Override
     public List<Film> getPopularFilms(int count) {
         List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS, new FilmMapper());
         getRatings(popularFilms);
@@ -116,6 +116,26 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilmsByGenreIdAndYear(int count, int genreId, int year) {
         List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR, new FilmMapper(),
                 genreId, year, count);
+        getRatings(popularFilms);
+        getGenres(popularFilms);
+        return popularFilms;
+    }*/
+
+    @Override
+    public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
+        List<Film> popularFilms = new ArrayList<>();
+        if(Objects.isNull(genreId) & Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS, new FilmMapper(), count);
+        } else if (!Objects.isNull(genreId) & !Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR, new FilmMapper(),
+                    genreId, year, count);
+        } else if (!Objects.isNull(genreId) & Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID, new FilmMapper(),
+                    genreId, count);
+        } else {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_YEAR, new FilmMapper(),
+                    year, count);
+        }
         getRatings(popularFilms);
         getGenres(popularFilms);
         return popularFilms;
