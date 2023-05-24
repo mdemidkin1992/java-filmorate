@@ -274,8 +274,10 @@ class FilmServiceTest {
         film2.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(4).name("Триллер").build())));
         film3.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
                 Genre.builder().id(2).name("Драма").build())));
-        film4.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build(),
-                Genre.builder().id(2).name("Драма").build())));
+        film4.setGenres(new ArrayList<>(Arrays.asList(
+                Genre.builder().id(2).name("Драма").build(),
+                Genre.builder().id(3).name("Мультфильм").build()
+        )));
         film5.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
                 Genre.builder().id(2).name("Драма").build())));
         film6.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build())));

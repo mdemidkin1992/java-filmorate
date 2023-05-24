@@ -89,12 +89,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        return jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS,
-                new FilmResultSetExtractor()).stream().limit(count).collect(Collectors.toList());
-    }
-
-    @Override
     public List<Film> findFilmsByTitle(String query) {
         return jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_NAME,
                 new FilmResultSetExtractor(), "%" + query + "%");
@@ -102,21 +96,21 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
-        List<Film> popularFilms = new ArrayList<>();
+        List<Film> popularFilms;
         if (Objects.isNull(genreId) & Objects.isNull(year)) {
             popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS,
-                    new FilmResultSetExtractor(), count);
+                    new FilmResultSetExtractor());
         } else if (!Objects.isNull(genreId) & !Objects.isNull(year)) {
             popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR,
-                    new FilmResultSetExtractor(), genreId, year, count);
+                    new FilmResultSetExtractor(), genreId, year);
         } else if (!Objects.isNull(genreId) & Objects.isNull(year)) {
             popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID,
-                    new FilmResultSetExtractor(), genreId, count);
+                    new FilmResultSetExtractor(), genreId);
         } else {
             popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_YEAR,
-                    new FilmResultSetExtractor(), year, count);
+                    new FilmResultSetExtractor(), year);
         }
-        return popularFilms;
+        return popularFilms.stream().limit(count).collect(Collectors.toList());
     }
 
     @Override

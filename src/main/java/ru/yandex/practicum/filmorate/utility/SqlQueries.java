@@ -12,14 +12,14 @@ public final class SqlQueries {
     public static final String UPDATE_USER = "UPDATE APP_USERS SET USER_NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? WHERE USER_ID = ?";
 
     public static final String GET_USERS_LIKES =
-            "SELECT * FROM APP_USERS au \n" +
-                    "JOIN LIKES l ON au.USER_ID = l.USER_ID \n" +
-                    "JOIN FILMS f ON f.FILM_ID = l.FILM_ID\n" +
-                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID \n" +
+            "SELECT * FROM APP_USERS au " +
+                    "JOIN LIKES l ON au.USER_ID = l.USER_ID " +
+                    "JOIN FILMS f ON f.FILM_ID = l.FILM_ID " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "WHERE au.USER_ID = ?";
 
     public static final String DELETE_USER_BY_ID = "DELETE FROM APP_USERS WHERE USER_ID = ?";
@@ -31,20 +31,20 @@ public final class SqlQueries {
 
     // FILMS
     public static final String GET_FILMS =
-            "SELECT * FROM FILMS f \n" +
-                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID \n" +
+            "SELECT * FROM FILMS f " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID";
 
     public static final String GET_FILM =
-            "SELECT * FROM FILMS f \n" +
-                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
+            "SELECT * FROM FILMS f " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "WHERE f.FILM_ID = ?";
 
     public static final String ADD_FILM = "INSERT INTO FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID) VALUES (?, ?, ?, ?, ?)";
@@ -55,62 +55,62 @@ public final class SqlQueries {
     public static final String DELETE_FILMS_DIRECTORS = "DELETE FROM FILMS_DIRECTORS WHERE FILM_ID = ?";
 
     public static final String FIND_FILMS_BY_NAME =
-            "SELECT * \n" +
-                    "FROM FILMS f \n" +
-                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID \n" +
-                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
-                    "WHERE LOWER(f.FILM_NAME) LIKE ? \n" +
+            "SELECT * " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE LOWER(f.FILM_NAME) LIKE ? " +
                     "ORDER BY temp.LIKES_COUNT DESC";
 
     public static final String FIND_FILMS_BY_DIRECTOR =
-            "SELECT * \n" +
-                    "FROM FILMS f \n" +
-                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID \n" +
-                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID\n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
-                    "WHERE LOWER(d.DIRECTOR_NAME) LIKE ? \n" +
+            "SELECT * " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE LOWER(d.DIRECTOR_NAME) LIKE ? " +
                     "ORDER BY temp.LIKES_COUNT DESC";
 
     public static final String FIND_FILMS_BY_NAME_OR_DIRECTOR =
-            "SELECT * \n" +
-                    "FROM FILMS f \n" +
-                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID \n" +
-                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID\n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
-                    "WHERE LOWER(d.DIRECTOR_NAME) LIKE ? OR LOWER(f.FILM_NAME) LIKE ? \n" +
+            "SELECT * " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE LOWER(d.DIRECTOR_NAME) LIKE ? OR LOWER(f.FILM_NAME) LIKE ? " +
                     "ORDER BY temp.LIKES_COUNT DESC";
 
     public static final String FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_LIKES =
-            "SELECT * \n" +
-                    "FROM FILMS f \n" +
-                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID \n" +
-                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID\n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
-                    "WHERE d.DIRECTOR_ID = ? \n" +
+            "SELECT * " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE d.DIRECTOR_ID = ? " +
                     "ORDER BY temp.LIKES_COUNT DESC";
 
     public static final String FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_YEAR =
-            "SELECT * \n" +
-                    "FROM FILMS f LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID \n" +
-                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
-                    "WHERE d.DIRECTOR_ID = ? \n" +
+            "SELECT * " +
+                    "FROM FILMS f LEFT JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd on f.FILM_ID = fd.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE d.DIRECTOR_ID = ? " +
                     "ORDER BY EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE))";
 
     public static final String DELETE_FILMS_BY_ID = "DELETE FROM FILMS WHERE FILM_ID = ?";
@@ -118,28 +118,47 @@ public final class SqlQueries {
     // LIKES
     public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     public static final String DELETE_LIKE = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
-    public static final String GET_POPULAR_FILMS = "SELECT * FROM FILMS f LEFT JOIN (SELECT l.FILM_ID, " +
-            "COUNT(l.USER_ID) AS likes_count FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
-            "ORDER BY temp.LIKES_COUNT DESC LIMIT ?";
-    public static final String GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
-            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
-            "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) AND " +
-            "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
-    public static final String GET_POPULAR_FILMS_BY_GENRE_ID = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
-            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
-            "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) GROUP BY " +
-            "f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
-    public static final String GET_POPULAR_FILMS_BY_YEAR = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
-            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
-            "WHERE EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
     public static final String GET_POPULAR_FILMS =
-            "SELECT * FROM FILMS f LEFT \n" +
-                    "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID\n" +
-                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID \n" +
-                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID \n" +
-                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID \n" +
-                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID \n" +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID \n" +
+            "SELECT * FROM FILMS f LEFT " +
+                    "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "ORDER BY temp.LIKES_COUNT DESC";
+    public static final String GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR =
+            "SELECT * FROM FILMS f LEFT " +
+                    "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) AND " +
+                    "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? " +
+                    "GROUP BY f.FILM_ID, FG.GENRE_ID " +
+                    "ORDER BY temp.LIKES_COUNT DESC ";
+    public static final String GET_POPULAR_FILMS_BY_GENRE_ID =
+            "SELECT * FROM FILMS f LEFT " +
+                    "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES fg WHERE fg.GENRE_ID = ? )" +
+                    "ORDER BY temp.LIKES_COUNT DESC";
+    public static final String GET_POPULAR_FILMS_BY_YEAR =
+            "SELECT * FROM FILMS f LEFT " +
+                    "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? " +
+                    "GROUP BY f.FILM_ID, FG.GENRE_ID " +
                     "ORDER BY temp.LIKES_COUNT DESC";
 
     // RATINGS
@@ -155,7 +174,7 @@ public final class SqlQueries {
             "INSERT INTO EVENTS (USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID, EVENT_TIMESTAMP) VALUES (?, ?, ?, ?, ?)";
 
     public static final String GET_USER_EVENTS =
-            "SELECT EVENT_ID, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID, EVENT_TIMESTAMP FROM EVENTS WHERE USER_ID = ?"
+            "SELECT EVENT_ID, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID, EVENT_TIMESTAMP FROM EVENTS WHERE USER_ID = ? "
                     + "ORDER BY EVENT_TIMESTAMP";
 
     public static final String GET_USER_EVENT_BY_ENTITY_ID_AND_EVENT_TYPE =
