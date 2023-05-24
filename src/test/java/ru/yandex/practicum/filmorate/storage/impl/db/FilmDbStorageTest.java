@@ -29,7 +29,8 @@ public class FilmDbStorageTest {
     void shouldBeSize0CorrectDeleteFilm() {
         Film film = createFilm();
         filmDbStorage.createFilm(film);
-        filmDbStorage.deleteFilmById(1);
+        System.out.println("DEBUG: " + filmDbStorage.getFilms());
+        filmDbStorage.deleteFilmById(filmDbStorage.getFilms().stream().findFirst().get().getId());
         assertEquals(filmDbStorage.getFilms().size(), 0);
     }
 

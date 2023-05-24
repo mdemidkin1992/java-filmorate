@@ -26,8 +26,8 @@ public class UserDbStorageTest {
     void shouldBeSize0CorrectDeleteUser() {
         User user = createUser();
         userDbStorage.createUser(user);
-        userDbStorage.deleteUserById(1);
-        assertEquals(userDbStorage.getUsers().size(),0);
+        userDbStorage.deleteUserById(userDbStorage.getUsers().stream().findFirst().get().getId());
+        assertEquals(userDbStorage.getUsers().size(), 0);
     }
 
     @Test
