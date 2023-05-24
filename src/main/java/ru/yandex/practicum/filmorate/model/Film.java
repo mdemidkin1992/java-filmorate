@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,12 +36,14 @@ public class Film {
     @Positive(message = "Film duration should be > 0")
     int duration;
 
-    List<Genre> genres;
+    @Builder.Default
+    List<Genre> genres = new ArrayList<>();
 
     Rating mpa;
 
     @JsonIgnore
     private final Set<Long> likes = new HashSet<>();
 
-    private final Set<Director> directors = new HashSet<>();
+    @Builder.Default
+    Set<Director> directors = new HashSet<>();
 }
