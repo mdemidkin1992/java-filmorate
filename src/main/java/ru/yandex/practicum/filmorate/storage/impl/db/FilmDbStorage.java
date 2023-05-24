@@ -101,6 +101,25 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
+        List<Film> popularFilms = new ArrayList<>();
+        if (Objects.isNull(genreId) & Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS,
+                    new FilmResultSetExtractor(), count);
+        } else if (!Objects.isNull(genreId) & !Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR,
+                    new FilmResultSetExtractor(), genreId, year, count);
+        } else if (!Objects.isNull(genreId) & Objects.isNull(year)) {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID,
+                    new FilmResultSetExtractor(), genreId, count);
+        } else {
+            popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_YEAR,
+                    new FilmResultSetExtractor(), year, count);
+        }
+        return popularFilms;
+    }
+
+    @Override
     public List<Film> findFilmsByDirector(String query) {
         return jdbcTemplate.query(SqlQueries.FIND_FILMS_BY_DIRECTOR,
                 new FilmResultSetExtractor(), "%" + query + "%");

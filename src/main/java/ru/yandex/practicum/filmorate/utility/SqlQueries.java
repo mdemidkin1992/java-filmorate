@@ -118,6 +118,20 @@ public final class SqlQueries {
     // LIKES
     public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     public static final String DELETE_LIKE = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
+    public static final String GET_POPULAR_FILMS = "SELECT * FROM FILMS f LEFT JOIN (SELECT l.FILM_ID, " +
+            "COUNT(l.USER_ID) AS likes_count FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+            "ORDER BY temp.LIKES_COUNT DESC LIMIT ?";
+    public static final String GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
+            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
+            "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) AND " +
+            "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
+    public static final String GET_POPULAR_FILMS_BY_GENRE_ID = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
+            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
+            "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) GROUP BY " +
+            "f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
+    public static final String GET_POPULAR_FILMS_BY_YEAR = "SELECT f.*, r.* FROM FILMS AS f LEFT JOIN " +
+            "LIKES AS l ON f.FILM_ID = l.FILM_ID LEFT JOIN RATINGS AS r ON f.rating_ID = r.rating_ID " +
+            "WHERE EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? GROUP BY f.FILM_ID ORDER BY COUNT(l.USER_ID) DESC LIMIT ?";
     public static final String GET_POPULAR_FILMS =
             "SELECT * FROM FILMS f LEFT \n" +
                     "JOIN (SELECT l.FILM_ID, COUNT(l.USER_ID) AS LIKES_COUNT FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID\n" +
