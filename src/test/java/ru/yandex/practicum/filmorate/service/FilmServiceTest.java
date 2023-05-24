@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.impl.db.FilmDbStorage;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,6 +81,336 @@ class FilmServiceTest {
         List<Film> actualRecommendations = filmService.getCommonFilms(userId1, userId2);
         List<Film> expectedRecommendations = new ArrayList<>();
         assertEquals(expectedRecommendations, actualRecommendations);
+    }
+
+    @Test
+    public void getPopularFilmsWithParametresTest() {
+        Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
+                .releaseDate(LocalDate.of(1997, 01, 1))
+                .duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film2 = Film.builder().name("Фильм 2").description("Описание 2")
+                .releaseDate(LocalDate.of(2009, 12, 17)).duration(162)
+                .mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film3 = Film.builder().name("Фильм 3").description("Описание 3")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film4 = Film.builder().name("Фильм 4").description("Intrigue. Chaos. Soap")
+                .releaseDate(LocalDate.of(1999, 10, 11)).duration(50)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film5 = Film.builder().name("Фильм 5").description("Описание 5")
+                .releaseDate(LocalDate.of(1998, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film6 = Film.builder().name("Фильм 6").description("Описание 6")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+
+        film1.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build())));
+        film2.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(4).name("Триллер").build())));
+        film3.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film4.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film5.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film6.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build())));
+
+
+        Film filmForTest1 = filmDbStorage.createFilm(film1);
+        Film filmForTest2 = filmDbStorage.createFilm(film2);
+        Film filmForTest3 = filmDbStorage.createFilm(film3);
+        Film filmForTest4 = filmDbStorage.createFilm(film4);
+        Film filmForTest5 = filmDbStorage.createFilm(film5);
+        Film filmForTest6 = filmDbStorage.createFilm(film6);
+
+        User user1 = User.builder().name("User1").login("User1login").email("User1@email.com")
+                .birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("User2").login("User2login").email("User2@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("User3").login("User3login").email("User3@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user4 = User.builder().name("User4").login("User4login").email("User4@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user5 = User.builder().name("User5").login("User5login").email("User5@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
+
+        filmDbStorage.addLike(filmForTest1.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user5.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest6.getId(), user1.getId());
+
+        List<Film> popularFilmsForTest = new ArrayList<>();
+        popularFilmsForTest.add(filmForTest3);
+        popularFilmsForTest.add(filmForTest6);
+        List<Film> popularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(3, 1, 1999);
+        assertEquals(popularFilmsForTest, popularFilms);
+    }
+
+    @Test
+    public void getPopularFilmsWithoutParametresTest() {
+        Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
+                .releaseDate(LocalDate.of(1997, 01, 1))
+                .duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film2 = Film.builder().name("Фильм 2").description("Описание 2")
+                .releaseDate(LocalDate.of(2009, 12, 17)).duration(162)
+                .mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film3 = Film.builder().name("Фильм 3").description("Описание 3")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film4 = Film.builder().name("Фильм 4").description("Intrigue. Chaos. Soap")
+                .releaseDate(LocalDate.of(1999, 10, 11)).duration(50)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film5 = Film.builder().name("Фильм 5").description("Описание 5")
+                .releaseDate(LocalDate.of(1998, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film6 = Film.builder().name("Фильм 6").description("Описание 6")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+
+        film1.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build())));
+        film2.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(4).name("Триллер").build())));
+        film3.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film4.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film5.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film6.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build())));
+
+
+        Film filmForTest1 = filmDbStorage.createFilm(film1);
+        Film filmForTest2 = filmDbStorage.createFilm(film2);
+        Film filmForTest3 = filmDbStorage.createFilm(film3);
+        Film filmForTest4 = filmDbStorage.createFilm(film4);
+        Film filmForTest5 = filmDbStorage.createFilm(film5);
+        Film filmForTest6 = filmDbStorage.createFilm(film6);
+
+        User user1 = User.builder().name("User1").login("User1login").email("User1@email.com")
+                .birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("User2").login("User2login").email("User2@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("User3").login("User3login").email("User3@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user4 = User.builder().name("User4").login("User4login").email("User4@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user5 = User.builder().name("User5").login("User5login").email("User5@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
+
+        filmDbStorage.addLike(filmForTest1.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user5.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest6.getId(), user1.getId());
+
+        List<Film> popularFilmsForTest = new ArrayList<>();
+        popularFilmsForTest.add(filmForTest2);
+        popularFilmsForTest.add(filmForTest1);
+        popularFilmsForTest.add(filmForTest3);
+        popularFilmsForTest.add(filmForTest4);
+        popularFilmsForTest.add(filmForTest5);
+        popularFilmsForTest.add(filmForTest6);
+        List<Film> popularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(10, null, null);
+        assertEquals(popularFilmsForTest, popularFilms);
+    }
+
+    @Test
+    public void getPopularFilmsWithCountAndYearParametresTest() {
+        Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
+                .releaseDate(LocalDate.of(1997, 01, 1))
+                .duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film2 = Film.builder().name("Фильм 2").description("Описание 2")
+                .releaseDate(LocalDate.of(2009, 12, 17)).duration(162)
+                .mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film3 = Film.builder().name("Фильм 3").description("Описание 3")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film4 = Film.builder().name("Фильм 4").description("Intrigue. Chaos. Soap")
+                .releaseDate(LocalDate.of(1999, 10, 11)).duration(50)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film5 = Film.builder().name("Фильм 5").description("Описание 5")
+                .releaseDate(LocalDate.of(1998, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film6 = Film.builder().name("Фильм 6").description("Описание 6")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+
+        film1.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build())));
+        film2.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(4).name("Триллер").build())));
+        film3.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film4.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film5.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film6.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build())));
+
+
+        Film filmForTest1 = filmDbStorage.createFilm(film1);
+        Film filmForTest2 = filmDbStorage.createFilm(film2);
+        Film filmForTest3 = filmDbStorage.createFilm(film3);
+        Film filmForTest4 = filmDbStorage.createFilm(film4);
+        Film filmForTest5 = filmDbStorage.createFilm(film5);
+        Film filmForTest6 = filmDbStorage.createFilm(film6);
+
+        User user1 = User.builder().name("User1").login("User1login").email("User1@email.com")
+                .birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("User2").login("User2login").email("User2@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("User3").login("User3login").email("User3@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user4 = User.builder().name("User4").login("User4login").email("User4@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user5 = User.builder().name("User5").login("User5login").email("User5@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
+
+        filmDbStorage.addLike(filmForTest1.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user5.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest6.getId(), user1.getId());
+
+        List<Film> popularFilmsForTest = new ArrayList<>();
+        popularFilmsForTest.add(filmForTest3);
+        popularFilmsForTest.add(filmForTest4);
+        popularFilmsForTest.add(filmForTest6);
+        List<Film> popularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(3, null, 1999);
+        assertEquals(popularFilmsForTest, popularFilms);
+    }
+
+    @Test
+    public void getPopularFilmsWithCountAndGenreIdTest() {
+        Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
+                .releaseDate(LocalDate.of(1997, 01, 1))
+                .duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film2 = Film.builder().name("Фильм 2").description("Описание 2")
+                .releaseDate(LocalDate.of(2009, 12, 17)).duration(162)
+                .mpa(Rating.builder().id(3).name("PG-13").build()).build();
+        Film film3 = Film.builder().name("Фильм 3").description("Описание 3")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film4 = Film.builder().name("Фильм 4").description("Intrigue. Chaos. Soap")
+                .releaseDate(LocalDate.of(1999, 10, 11)).duration(50)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film5 = Film.builder().name("Фильм 5").description("Описание 5")
+                .releaseDate(LocalDate.of(1998, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+        Film film6 = Film.builder().name("Фильм 6").description("Описание 6")
+                .releaseDate(LocalDate.of(1999, 9, 11)).duration(139)
+                .mpa(Rating.builder().id(4).name("R").build()).build();
+
+        film1.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build())));
+        film2.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(4).name("Триллер").build())));
+        film3.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film4.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film5.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build(),
+                Genre.builder().id(2).name("Драма").build())));
+        film6.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(1).name("Комедия").build())));
+
+
+        Film filmForTest1 = filmDbStorage.createFilm(film1);
+        Film filmForTest2 = filmDbStorage.createFilm(film2);
+        Film filmForTest3 = filmDbStorage.createFilm(film3);
+        Film filmForTest4 = filmDbStorage.createFilm(film4);
+        Film filmForTest5 = filmDbStorage.createFilm(film5);
+        Film filmForTest6 = filmDbStorage.createFilm(film6);
+
+        User user1 = User.builder().name("User1").login("User1login").email("User1@email.com")
+                .birthday(LocalDate.of(1992, 1, 2)).build();
+        User user2 = User.builder().name("User2").login("User2login").email("User2@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user3 = User.builder().name("User3").login("User3login").email("User3@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user4 = User.builder().name("User4").login("User4login").email("User4@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+        User user5 = User.builder().name("User5").login("User5login").email("User5@email.com")
+                .birthday(LocalDate.of(1995, 2, 4)).build();
+
+        userDbStorage.createUser(user1);
+        userDbStorage.createUser(user2);
+        userDbStorage.createUser(user3);
+        userDbStorage.createUser(user4);
+        userDbStorage.createUser(user5);
+
+        filmDbStorage.addLike(filmForTest1.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest1.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user4.getId());
+        filmDbStorage.addLike(filmForTest2.getId(), user5.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest3.getId(), user3.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest4.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user1.getId());
+        filmDbStorage.addLike(filmForTest5.getId(), user2.getId());
+        filmDbStorage.addLike(filmForTest6.getId(), user1.getId());
+
+        List<Film> popularFilmsForTest = new ArrayList<>();
+        popularFilmsForTest.add(filmForTest3);
+        popularFilmsForTest.add(filmForTest5);
+        popularFilmsForTest.add(filmForTest6);
+        List<Film> popularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(10, 1, null);
+        assertEquals(popularFilmsForTest, popularFilms);
     }
 
     @AfterEach

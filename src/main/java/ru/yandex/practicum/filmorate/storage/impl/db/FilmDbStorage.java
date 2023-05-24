@@ -24,7 +24,6 @@ import ru.yandex.practicum.filmorate.utility.SqlQueries;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
 @Slf4j
@@ -103,23 +102,6 @@ public class FilmDbStorage implements FilmStorage {
         getFilmById(filmId);
         jdbcTemplate.update(SqlQueries.DELETE_LIKE, filmId, userId);
     }
-
-    /*@Override
-    public List<Film> getPopularFilms(int count) {
-        List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS, new FilmMapper());
-        getRatings(popularFilms);
-        getGenres(popularFilms);
-        return popularFilms.stream().limit(count).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Film> getPopularFilmsByGenreIdAndYear(int count, int genreId, int year) {
-        List<Film> popularFilms = jdbcTemplate.query(SqlQueries.GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR, new FilmMapper(),
-                genreId, year, count);
-        getRatings(popularFilms);
-        getGenres(popularFilms);
-        return popularFilms;
-    }*/
 
     @Override
     public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
