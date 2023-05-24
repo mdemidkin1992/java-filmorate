@@ -108,4 +108,11 @@ public class UserController {
         return eventService.getUserEvents(userId);
     }
 
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable("userId") int userId) {
+        log.info("DELETE request received: delete user by id \"{}\"",userId);
+        userService.deleteUserById(userId);
+        log.info("User with id \"{}\" deleted", userId);
+    }
+
 }

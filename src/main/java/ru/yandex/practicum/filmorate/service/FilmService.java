@@ -104,4 +104,8 @@ public class FilmService {
 
         return new ArrayList<>(intersection);
     }
+
+    public void deleteFilmById(int filmId) {
+        filmStorage.deleteFilmById(filmId);
+    }
 }

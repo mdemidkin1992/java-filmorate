@@ -9,16 +9,10 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.impl.db.mapper.DirectorMapper;
-import ru.yandex.practicum.filmorate.storage.impl.db.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.storage.impl.db.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.storage.impl.db.mapper.RatingMapper;
+import ru.yandex.practicum.filmorate.storage.impl.db.mapper.*;
 import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
@@ -174,6 +168,16 @@ public class FilmDbStorage implements FilmStorage {
         getGenres(filmsLikedByUser);
         getDirectors(filmsLikedByUser);
         return filmsLikedByUser;
+    }
+
+    @Override
+    public void deleteFilmById(int filmId) {
+        Film film = jdbcTemplate.query(SqlQueries.GET_FILM, new FilmMapper(),filmId).stream().findAny().orElse(null);
+        if (film == null) {
+            log.error("Film with id {} doesn't exist", filmId);
+            throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
+        }
+        jdbcTemplate.update(SqlQueries.DELETE_FILMS_BY_ID,filmId);
     }
 
     private void updateFilmDirectors(Film film) {

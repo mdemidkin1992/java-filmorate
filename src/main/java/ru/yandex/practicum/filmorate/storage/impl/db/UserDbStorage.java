@@ -67,6 +67,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int userId) {
+        User user = jdbcTemplate.query(SqlQueries.GET_USER, new UserMapper(), userId).stream().findAny().orElse(null);
+        if (user == null) {
+            log.error("User with id {} doesn't exist", userId);
+            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
+        }
         return jdbcTemplate.query(SqlQueries.GET_FRIENDS, new UserMapper(), userId);
     }
 
@@ -128,6 +133,16 @@ public class UserDbStorage implements UserStorage {
         }
 
         return otherUserIdWithCommonInterests;
+    }
+
+    @Override
+    public void deleteUserById(int userId) {
+        User user = jdbcTemplate.query(SqlQueries.GET_USER,new UserMapper(),userId).stream().findAny().orElse(null);
+        if (user == null) {
+            log.error("User with id {} doesn't exist", userId);
+            throw new UserNotFoundException("User with id " + userId + " doesn't exist");
+        }
+        jdbcTemplate.update(SqlQueries.DELETE_USER_BY_ID,userId);
     }
 
     private void addUserToDb(User user) {
