@@ -25,7 +25,7 @@ public class FilmController {
     public List<Film> getFilms() {
         log.info("GET request for all films received");
         List<Film> response = filmService.getFilms();
-        log.info("Number of films: {}", filmService.getFilms().size());
+        log.info("Number of films: {}", response.size());
         log.info("All films: {}", response);
         return response;
     }
@@ -71,12 +71,48 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(
-            @RequestParam(defaultValue = "10", required = false) int count
-    ) {
-        log.info("GET request received: top-{} popular films", count);
-        List<Film> response = filmService.getPopularFilms(count);
+    public List<Film> getPopularFilmsByGenreIdAndYear(@RequestParam(defaultValue = "10", required = false) int count,
+                                                      @RequestParam(required = false) Integer genreId,
+                                                      @RequestParam(required = false) Integer year) {
+        log.info("GET request for count = {} genreId = {} release year = {}", count, genreId, year);
+        List<Film> response = filmService.getPopularFilmsByGenreIdAndYear(count, genreId, year);
+        log.info("Number of films: {}", response.size());
         log.info("Most popular films: {}", response);
         return response;
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam int userId, @RequestParam int friendId
+    ) {
+        log.info("GET request received: users {} and {} common films", userId, friendId);
+        List<Film> response = filmService.getCommonFilms(userId, friendId);
+        log.info("Common films: {}", response);
+        return response;
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilmsByTitleOrDirector(
+            @RequestParam String query, @RequestParam String by) {
+        log.info("GET request received: search films {} by {}", query, by);
+        List<Film> response = filmService.searchFilmsByTitleOrDirector(query, by);
+        log.info("Found films: {}", response);
+        return response;
+    }
+
+    @GetMapping("/director/{id}")
+    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(
+            @PathVariable("id") int directorId, @RequestParam String sortBy) {
+        log.info("GET request received: get all films by director id \"{}\", sorting by \"{}\"", directorId, sortBy);
+        List<Film> response = filmService.getAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy);
+        log.info("Found films: {}", response);
+        return response;
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable("filmId") int filmId) {
+        log.info("DELETE request received: delete film by id \"{}\"", filmId);
+        filmService.deleteFilmById(filmId);
+        log.info("Films with id \"{}\" deleted", filmId);
     }
 }
