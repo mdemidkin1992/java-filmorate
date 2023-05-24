@@ -4,10 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.aspects.annotation.SaveUserEvent;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.aspects.annotation.SaveUserEvent.None.NONE_PARAM;
 
 @Service
 @Slf4j
@@ -19,6 +24,7 @@ public class ReviewService {
         this.reviewStorage = reviewStorage;
     }
 
+    @SaveUserEvent(eventType = EventType.REVIEW, operation = OperationType.ADD, entityClass = Review.class)
     public Review createReview(Review review) {
         return reviewStorage.createReview(review);
     }
@@ -31,10 +37,15 @@ public class ReviewService {
         return reviewStorage.getReviews(filmId, count);
     }
 
+    @SaveUserEvent(eventType = EventType.REVIEW, operation = OperationType.UPDATE, entityClass = Review.class)
     public Review updateReview(Review review) {
         return reviewStorage.updateReview(review);
     }
 
+    @SaveUserEvent(
+            eventType = EventType.REVIEW, operation = OperationType.REMOVE,
+            entityIdParamName = "reviewId", userIdParamName = NONE_PARAM
+    )
     public void deleteReviewById(int reviewId) {
         reviewStorage.deleteReviewById(reviewId);
     }

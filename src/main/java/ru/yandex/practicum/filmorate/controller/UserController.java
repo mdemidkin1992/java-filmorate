@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -16,10 +18,12 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final EventService eventService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EventService eventService) {
         this.userService = userService;
+        this.eventService = eventService;
     }
 
     @GetMapping
@@ -97,4 +101,11 @@ public class UserController {
         log.info("User \"{}\" film recommendations: \"{}\"", userId, response);
         return response;
     }
+
+    @GetMapping("{id}/feed")
+    public List<Event> getUserFeed(@PathVariable("id") int userId) {
+        log.info("GET request received: get feed of user \"{}\"", userId);
+        return eventService.getUserEvents(userId);
+    }
+
 }
