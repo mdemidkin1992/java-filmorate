@@ -28,4 +28,6 @@ public interface FilmStorage {
     List<Film> findAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy);
 
     List<Film> getFilmsLikedByUser(int userId);
+
+    void deleteFilmById(int filmId);
 }

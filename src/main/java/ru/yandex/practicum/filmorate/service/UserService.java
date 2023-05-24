@@ -75,4 +75,8 @@ public class UserService {
 
         return new ArrayList<>(union);
     }
+
+    public void deleteUserById(int userId) {
+        userStorage.deleteUserById(userId);
+    }
 }

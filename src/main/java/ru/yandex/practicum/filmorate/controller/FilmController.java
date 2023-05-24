@@ -107,4 +107,11 @@ public class FilmController {
         log.info("Found films: {}", response);
         return response;
     }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable("filmId") int filmId) {
+        log.info("DELETE request received: delete film by id \"{}\"", filmId);
+        filmService.deleteFilmById(filmId);
+        log.info("Films with id \"{}\" deleted", filmId);
+    }
 }
