@@ -26,7 +26,7 @@ public class DirectorController {
     public List<Director> getDirectors() {
         log.info("GET request for all directors received");
         List<Director> response = directorService.getDirectors();
-        log.info("Number of directors: {}", directorService.getDirectors().size());
+        log.info("Number of directors: {}", response.size());
         log.info("All directors: {}", response);
         return response;
     }
