@@ -13,11 +13,10 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class RatingsDbStorage implements RatingStorage {
-    private final JdbcTemplate jdbcTemplate;
+public class RatingsDbStorage extends DBStorage implements RatingStorage {
 
     public RatingsDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
     }
 
     @Override

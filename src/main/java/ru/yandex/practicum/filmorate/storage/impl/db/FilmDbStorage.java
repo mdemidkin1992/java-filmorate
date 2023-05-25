@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
 @Slf4j
-public class FilmDbStorage implements FilmStorage {
+public class FilmDbStorage extends DBStorage implements FilmStorage {
 
-    private final JdbcTemplate jdbcTemplate;
     private final UserStorage userStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("userDbStorage") UserStorage userStorage) {
-        this.jdbcTemplate = jdbcTemplate;
+    public FilmDbStorage(JdbcTemplate jdbcTemplate,
+                         @Qualifier("userDbStorage") UserStorage userStorage) {
+        super(jdbcTemplate);
         this.userStorage = userStorage;
     }
 

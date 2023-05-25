@@ -18,11 +18,10 @@ import java.util.List;
 
 @Component("eventDbStorage")
 @Slf4j
-public class EventDbStorage implements EventStorage {
-    private final JdbcTemplate jdbcTemplate;
+public class EventDbStorage extends DBStorage implements EventStorage {
 
     public EventDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
     }
 
     @Override
