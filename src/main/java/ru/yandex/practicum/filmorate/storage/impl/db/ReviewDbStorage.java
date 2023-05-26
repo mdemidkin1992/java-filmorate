@@ -21,9 +21,8 @@ import java.util.Objects;
 
 @Component("reviewDbStorage")
 @Slf4j
-public class ReviewDbStorage implements ReviewStorage {
+public class ReviewDbStorage extends DBStorage implements ReviewStorage {
 
-    private final JdbcTemplate jdbcTemplate;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
@@ -32,7 +31,7 @@ public class ReviewDbStorage implements ReviewStorage {
             @Qualifier("userDbStorage") UserStorage userStorage,
             @Qualifier("filmDbStorage") FilmStorage filmStorage
     ) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }

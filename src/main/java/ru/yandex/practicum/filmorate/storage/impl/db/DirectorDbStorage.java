@@ -15,12 +15,10 @@ import java.util.List;
 
 @Component("directorDbStorage")
 @Slf4j
-public class DirectorDbStorage implements DirectorStorage {
-
-    private final JdbcTemplate jdbcTemplate;
+public class DirectorDbStorage extends DBStorage implements DirectorStorage {
 
     public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
     }
 
     @Override

@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
 
 @Component("userDbStorage")
 @Slf4j
-public class UserDbStorage implements UserStorage {
-
-    private final JdbcTemplate jdbcTemplate;
+public class UserDbStorage extends DBStorage implements UserStorage {
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
     }
 
     @Override
