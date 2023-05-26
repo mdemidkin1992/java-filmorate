@@ -8,9 +8,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.impl.db.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
 
@@ -20,6 +22,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
+    private final DirectorDbStorage directorDbStorage;
     private static final Validator VALIDATOR;
 
     static {
@@ -126,7 +130,7 @@ class FilmControllerTest {
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
 
-        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilms(count);
+        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
         assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
 
         filmDbStorage.deleteLike(filmId1, userId1);
@@ -135,7 +139,28 @@ class FilmControllerTest {
         expectedPopularFilms.clear();
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
-        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilms(count));
+        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
+    }
+
+    @Test
+    public void shouldGetFilmsByDirectorIdSortByYear() {
+        Director director = Director.builder().name("Director").build();
+        directorDbStorage.createDirector(director);
+        Set<Director> directors = new HashSet<>();
+        directors.add(director);
+
+        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).directors(directors).build();
+        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).name("PG-13").build()).directors(directors).build();
+
+        filmDbStorage.createFilm(film2);
+        filmDbStorage.createFilm(film1);
+
+        List<Film> actual = filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "YEAR");
+        List<Film> expected = new ArrayList<>();
+        expected.add(film1);
+        expected.add(film2);
+        System.out.println(actual);
+        assertEquals(expected, actual);
     }
 
     @Test

@@ -13,12 +13,10 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class GenresDbStorage implements GenresStorage {
-
-    private final JdbcTemplate jdbcTemplate;
+public class GenresDbStorage extends DBStorage implements GenresStorage {
 
     public GenresDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        super(jdbcTemplate);
     }
 
     @Override
