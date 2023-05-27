@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -63,7 +62,6 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     public Film getFilmById(int filmId) {
         Film film = jdbcTemplate.query(SqlQueries.GET_FILM, new FilmResultSetExtractor(), filmId).stream().findAny().orElse(null);
         if (film == null) {
-            log.error("Film with id {} doesn't exist", filmId);
             throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
         }
         return film;
@@ -140,7 +138,6 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
 
         List<Film> foundFilms = jdbcTemplate.query(sqlQuery, new FilmResultSetExtractor(), directorId);
         if (foundFilms.isEmpty()) {
-            log.warn("Films with director id \"{}\" not found", directorId);
             throw new DirectorNotFoundException(String.format("Films with director id \"%d\" not found", directorId));
         }
 
@@ -156,7 +153,6 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     @Override
     public void deleteFilmById(int filmId) {
         if (getFilmById(filmId) == null) {
-            log.error("Film with id {} doesn't exist", filmId);
             throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
         }
         jdbcTemplate.update(SqlQueries.DELETE_FILMS_BY_ID, filmId);

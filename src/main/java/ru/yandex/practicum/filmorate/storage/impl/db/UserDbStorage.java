@@ -7,7 +7,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.UserMapper;
@@ -52,7 +51,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     public User getUserById(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER, new UserMapper(), userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         return user;
@@ -67,7 +65,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     public List<User> getFriends(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER, new UserMapper(), userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         return jdbcTemplate.query(SqlQueries.GET_FRIENDS, new UserMapper(), userId);
@@ -101,7 +98,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     @Override
     public int getOtherUserIdWithCommonInterests(int userId) {
         Map<Integer, List<Integer>> userLikes = new HashMap<>();
-        List<Film> recommendations = new ArrayList<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM LIKES");
 
         while (rs.next()) {
@@ -137,7 +133,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     public void deleteUserById(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER,new UserMapper(),userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         jdbcTemplate.update(SqlQueries.DELETE_USER_BY_ID,userId);
