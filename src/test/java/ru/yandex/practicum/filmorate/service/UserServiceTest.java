@@ -28,6 +28,8 @@ class UserServiceTest {
 
     @Test
     public void shouldGetRecommendations() {
+        int likeScore = 8;
+
         Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
         Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).name("PG-13").build()).build();
         Film film3 = Film.builder().name("Fight Club").description("Intrigue. Chaos. Soap").releaseDate(LocalDate.of(1999, 9, 11)).duration(139).mpa(Rating.builder().id(4).name("R").build()).build();
@@ -46,11 +48,11 @@ class UserServiceTest {
 
         int userId1 = user1.getId(), userId2 = user2.getId();
 
-        filmDbStorage.addLike(filmId1, userId1);
-        filmDbStorage.addLike(filmId1, userId2);
-        filmDbStorage.addLike(filmId2, userId1);
-        filmDbStorage.addLike(filmId2, userId2);
-        filmDbStorage.addLike(filmId3, userId2);
+        filmDbStorage.addLike(filmId1, userId1, likeScore);
+        filmDbStorage.addLike(filmId1, userId2, likeScore);
+        filmDbStorage.addLike(filmId2, userId1, likeScore);
+        filmDbStorage.addLike(filmId2, userId2, likeScore);
+        filmDbStorage.addLike(filmId3, userId2, likeScore);
 
         List<Film> actualRecommendations = userService.getFilmRecommendations(userId1);
         List<Film> expectedRecommendations = new ArrayList<>();
@@ -85,6 +87,8 @@ class UserServiceTest {
 
     @Test
     public void shouldNotGetRecommendationsIfTheSameLikes() {
+        int likeScore = 8;
+
         Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
         Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).name("PG-13").build()).build();
         Film film3 = Film.builder().name("Fight Club").description("Intrigue. Chaos. Soap").releaseDate(LocalDate.of(1999, 9, 11)).duration(139).mpa(Rating.builder().id(4).name("R").build()).build();
@@ -103,10 +107,10 @@ class UserServiceTest {
 
         int userId1 = user1.getId(), userId2 = user2.getId();
 
-        filmDbStorage.addLike(filmId1, userId1);
-        filmDbStorage.addLike(filmId1, userId2);
-        filmDbStorage.addLike(filmId2, userId1);
-        filmDbStorage.addLike(filmId2, userId2);
+        filmDbStorage.addLike(filmId1, userId1, likeScore);
+        filmDbStorage.addLike(filmId1, userId2, likeScore);
+        filmDbStorage.addLike(filmId2, userId1, likeScore);
+        filmDbStorage.addLike(filmId2, userId2, likeScore);
 
         List<Film> actualRecommendations = userService.getFilmRecommendations(userId1);
         List<Film> expectedRecommendations = new ArrayList<>();

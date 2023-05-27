@@ -41,9 +41,6 @@ public class Film {
 
     Rating mpa;
 
-    @JsonIgnore
-    private final Set<Long> likes = new HashSet<>();
-
     @Builder.Default
     Set<Director> directors = new HashSet<>();
 }

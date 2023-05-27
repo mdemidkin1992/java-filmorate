@@ -118,12 +118,13 @@ class FilmControllerTest {
         userDbStorage.createUser(user5);
 
         int userId1 = user1.getId(), userId2 = user2.getId(), userId3 = user3.getId(), userId4 = user4.getId(), userId5 = user5.getId();
+        int likeScore = 5;
 
-        filmDbStorage.addLike(filmId1, userId1);
-        filmDbStorage.addLike(filmId1, userId2);
-        filmDbStorage.addLike(filmId2, userId3);
-        filmDbStorage.addLike(filmId2, userId4);
-        filmDbStorage.addLike(filmId2, userId5);
+        filmDbStorage.addLike(filmId1, userId1, likeScore);
+        filmDbStorage.addLike(filmId1, userId2, likeScore);
+        filmDbStorage.addLike(filmId2, userId3, likeScore);
+        filmDbStorage.addLike(filmId2, userId4, likeScore);
+        filmDbStorage.addLike(filmId2, userId5, likeScore);
 
         final int count = 2;
         final List<Film> expectedPopularFilms = new ArrayList<>();
@@ -178,7 +179,8 @@ class FilmControllerTest {
         filmDbStorage.createFilm(film1);
         int filmId1 = film1.getId();
         int userId = 999;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addLike(filmId1, userId));
+        int likeScore = 5;
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addLike(filmId1, userId, likeScore));
         String expectedMessage = "User with id " + userId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -187,11 +189,12 @@ class FilmControllerTest {
     @Test
     public void shouldNotAddLikeWhenFilmIdIsIncorrect() {
         int filmId = 999;
+        int likeScore = 5;
         User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
         userDbStorage.createUser(user1);
         int userId1 = user1.getId();
 
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addLike(filmId, userId1));
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addLike(filmId, userId1, likeScore));
         String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);

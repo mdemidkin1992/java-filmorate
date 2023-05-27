@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface FilmStorage {
 
     List<Film> getFilms();
 
-    void addLike(int filmId, int userId);
+    void addLike(int filmId, int userId, int likeScore);
 
     void deleteLike(int filmId, int userId);
 

@@ -244,6 +244,8 @@ public class FilmDbStorageTest {
 
     @Test
     void shouldReturnCollectionOfFilmsSortedByLikesWhenDirectorIsFound() {
+        int likeScore = 8;
+
         User user = User.builder()
                 .name("User")
                 .login("super-user")
@@ -279,7 +281,7 @@ public class FilmDbStorageTest {
         filmOne.setId(filmDbStorage.createFilm(filmOne).getId());
         filmTwo.setId(filmDbStorage.createFilm(filmTwo).getId());
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
-        filmDbStorage.addLike(filmThree.getId(), userId);
+        filmDbStorage.addLike(filmThree.getId(), userId, likeScore);
         Collection<Film> expected = List.of(filmThree, filmOne, filmTwo);
         Collection<Film> filmsDirectorSortedByLikes =
                 filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "likes");

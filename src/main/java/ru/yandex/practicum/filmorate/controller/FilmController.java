@@ -54,12 +54,13 @@ public class FilmController {
         return response;
     }
 
-    @PutMapping("{id}/like/{userId}")
+    @PutMapping("{id}/like/{userId}/{likeScore}")
     public void addLike(@PathVariable("id") int filmId,
-                        @PathVariable("userId") int userId) {
-        log.info("PUT request received: user id \"{}\" likes film id \"{}\"", userId, filmId);
-        filmService.addLike(filmId, userId);
-        log.info("Film \"{}\" added like from user \"{}\"", filmId, userId);
+                        @PathVariable("userId") int userId,
+                        @NotNull @PathVariable ("likeScore") int likeScore) {
+        log.info("PUT request received: user id \"{}\" gives {} likes to film id \"{}\" ", userId, likeScore, filmId);
+        filmService.addLike(filmId, userId, likeScore);
+        log.info("Film \"{}\" added {} likes from user \"{}\"", filmId, likeScore, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")

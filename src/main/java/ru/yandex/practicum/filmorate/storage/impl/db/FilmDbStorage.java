@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -75,10 +76,10 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(int filmId, int userId) {
+    public void addLike(int filmId, int userId, int likeScore) {
         userStorage.getUserById(userId);
         getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId, userId);
+        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId,  userId, likeScore);
     }
 
     @Override
