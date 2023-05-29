@@ -68,7 +68,7 @@ class FilmControllerTest {
         expected.add(filmDbStorage.getFilmById(filmId1));
         expected.add(filmDbStorage.getFilmById(filmId2));
 
-        List<Film> actual = filmDbStorage.getFilms();
+        List<Film> actual = filmDbStorage.getAllFilms();
         assertEquals(expected, actual, "Not all films were added to storage.");
     }
 
@@ -120,11 +120,11 @@ class FilmControllerTest {
         int userId1 = user1.getId(), userId2 = user2.getId(), userId3 = user3.getId(), userId4 = user4.getId(), userId5 = user5.getId();
         int likeScore = 5;
 
-        filmDbStorage.addLike(filmId1, userId1, likeScore);
-        filmDbStorage.addLike(filmId1, userId2, likeScore);
-        filmDbStorage.addLike(filmId2, userId3, likeScore);
-        filmDbStorage.addLike(filmId2, userId4, likeScore);
-        filmDbStorage.addLike(filmId2, userId5, likeScore);
+        filmDbStorage.addScore(filmId1, userId1, likeScore);
+        filmDbStorage.addScore(filmId1, userId2, likeScore);
+        filmDbStorage.addScore(filmId2, userId3, likeScore);
+        filmDbStorage.addScore(filmId2, userId4, likeScore);
+        filmDbStorage.addScore(filmId2, userId5, likeScore);
 
         final int count = 2;
         final List<Film> expectedPopularFilms = new ArrayList<>();
@@ -138,8 +138,8 @@ class FilmControllerTest {
         filmDbStorage.deleteLike(filmId1, userId2);
 
         expectedPopularFilms.clear();
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
         assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
     }
 
@@ -180,7 +180,7 @@ class FilmControllerTest {
         int filmId1 = film1.getId();
         int userId = 999;
         int likeScore = 5;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addLike(filmId1, userId, likeScore));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addScore(filmId1, userId, likeScore));
         String expectedMessage = "User with id " + userId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
@@ -194,7 +194,7 @@ class FilmControllerTest {
         userDbStorage.createUser(user1);
         int userId1 = user1.getId();
 
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addLike(filmId, userId1, likeScore));
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addScore(filmId, userId1, likeScore));
         String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);

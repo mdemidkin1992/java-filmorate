@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -68,16 +69,30 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         return jdbcTemplate.query(SqlQueries.GET_FILMS,
                 new FilmResultSetExtractor());
     }
 
     @Override
-    public void addLike(int filmId, int userId, int likeScore) {
+    public List<Film> getFilmsWhereIdEquals(List<Integer> filmsIds) {
+        String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
+        String sql = String.format(SqlQueries.GET_FILMS + " WHERE f.FILM_ID IN (%s)", inSql);
+        return jdbcTemplate.query(sql, new FilmResultSetExtractor(), filmsIds.toArray());
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
         userStorage.getUserById(userId);
         getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId,  userId, likeScore);
+        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId,  userId);
+    }
+
+    @Override
+    public void addScore(int filmId, int userId, int score) {
+        userStorage.getUserById(userId);
+        getFilmById(filmId);
+        jdbcTemplate.update(SqlQueries.ADD_SCORE, filmId,  userId, score);
     }
 
     @Override
@@ -148,6 +163,28 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     public List<Film> getFilmsLikedByUser(int userId) {
         return jdbcTemplate.query(SqlQueries.GET_USERS_LIKES,
                 new FilmResultSetExtractor(), userId);
+    }
+
+    @Override
+    public void getFilmScoresStats(
+            Map<Integer, HashMap<Integer, Double>> inputData,
+            List<Integer> allFilmsIds
+    ) {
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(SqlQueries.GET_SCORES);
+
+        while (rs.next()) {
+            int userDbId = rs.getInt("USER_ID");
+            int filmDbId = rs.getInt("FILM_ID");
+            double filmDbScore = rs.getDouble("SCORE");
+
+            HashMap<Integer, Double> scores = inputData.getOrDefault(userDbId, new HashMap<>());
+            scores.put(filmDbId, filmDbScore);
+            inputData.put(userDbId, scores);
+
+            if (!allFilmsIds.contains(filmDbId)) {
+                allFilmsIds.add(filmDbId);
+            }
+        }
     }
 
     @Override

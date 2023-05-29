@@ -24,4 +24,6 @@ public interface UserStorage {
     int getOtherUserIdWithCommonInterests(int userId);
 
     void deleteUserById(int userId);
+
+
 }

@@ -39,6 +39,15 @@ public final class SqlQueries {
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID";
 
+    public static final String GET_FILMS_WHERE_ID_EQUALS =
+            "SELECT * FROM FILMS f " +
+                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+                    "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID " +
+                    "WHERE f.FILM_ID IN (?)";
+
     public static final String GET_FILM =
             "SELECT * FROM FILMS f " +
                     "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
@@ -116,20 +125,21 @@ public final class SqlQueries {
     public static final String DELETE_FILMS_BY_ID = "DELETE FROM FILMS WHERE FILM_ID = ?";
 
     // LIKES
-    public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID, LIKES_SCORE) VALUES (?, ?, ?)";
+    public static final String ADD_SCORE = "INSERT INTO SCORES (FILM_ID, USER_ID, SCORE) VALUES (?, ?, ?)";
+    public static final String ADD_LIKE = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     public static final String DELETE_LIKE = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
     public static final String GET_POPULAR_FILMS =
             "SELECT * FROM FILMS f LEFT " +
-                    "JOIN (SELECT l.FILM_ID, round(AVG(l.LIKES_SCORE),1) AS LIKES_AVG_SCORE FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN (SELECT s.FILM_ID, round(AVG(s.SCORE),1) AS AVG_SCORE FROM SCORES s GROUP BY s.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
                     "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                    "ORDER BY temp.LIKES_AVG_SCORE DESC";
+                    "ORDER BY temp.AVG_SCORE DESC";
     public static final String GET_POPULAR_FILMS_BY_GENRE_ID_AND_YEAR =
             "SELECT * FROM FILMS f LEFT " +
-                    "JOIN (SELECT l.FILM_ID, round(AVG(l.LIKES_SCORE),1) AS LIKES_AVG_SCORE FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN (SELECT s.FILM_ID, round(AVG(s.SCORE),1) AS AVG_SCORE FROM SCORES s GROUP BY s.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
                     "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
@@ -138,20 +148,20 @@ public final class SqlQueries {
                     "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES AS fg WHERE fg.GENRE_ID = ?) AND " +
                     "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? " +
                     "GROUP BY f.FILM_ID, FG.GENRE_ID " +
-                    "ORDER BY temp.LIKES_AVG_SCORE DESC ";
+                    "ORDER BY temp.AVG_SCORE DESC ";
     public static final String GET_POPULAR_FILMS_BY_GENRE_ID =
             "SELECT * FROM FILMS f LEFT " +
-                    "JOIN (SELECT l.FILM_ID, round(AVG(l.LIKES_SCORE),1) AS LIKES_AVG_SCORE FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN (SELECT s.FILM_ID, round(AVG(s.SCORE),1) AS AVG_SCORE FROM SCORES s GROUP BY s.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
                     "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "WHERE f.FILM_ID IN (SELECT fg.FILM_ID FROM FILMS_GENRES fg WHERE fg.GENRE_ID = ? )" +
-                    "ORDER BY temp.LIKES_AVG_SCORE DESC";
+                    "ORDER BY temp.AVG_SCORE DESC";
     public static final String GET_POPULAR_FILMS_BY_YEAR =
             "SELECT * FROM FILMS f LEFT " +
-                    "JOIN (SELECT l.FILM_ID, round(AVG(l.LIKES_SCORE),1) AS LIKES_AVG_SCORE FROM LIKES l GROUP BY l.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "JOIN (SELECT s.FILM_ID, round(AVG(s.SCORE),1) AS AVG_SCORE FROM SCORES s GROUP BY s.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
                     "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
@@ -159,7 +169,7 @@ public final class SqlQueries {
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "WHERE EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = ? " +
                     "GROUP BY f.FILM_ID, FG.GENRE_ID " +
-                    "ORDER BY temp.LIKES_AVG_SCORE DESC";
+                    "ORDER BY temp.AVG_SCORE DESC";
 
     // RATINGS
     public static final String GET_RATINGS = "SELECT * FROM RATINGS";
@@ -199,4 +209,6 @@ public final class SqlQueries {
     public static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? IS_REVIEW_POSITIVE = true";
     public static final String DELETE_REVIEW_DISLIKE = "DELETE FROM REVIEWS_RATING WHERE REVIEW_ID = ?, USER_ID = ? IS_REVIEW_POSITIVE = false";
 
+    // SCORES
+    public static final String GET_SCORES = "SELECT * FROM SCORES";
 }

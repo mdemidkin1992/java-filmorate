@@ -48,11 +48,11 @@ class UserServiceTest {
 
         int userId1 = user1.getId(), userId2 = user2.getId();
 
-        filmDbStorage.addLike(filmId1, userId1, likeScore);
-        filmDbStorage.addLike(filmId1, userId2, likeScore);
-        filmDbStorage.addLike(filmId2, userId1, likeScore);
-        filmDbStorage.addLike(filmId2, userId2, likeScore);
-        filmDbStorage.addLike(filmId3, userId2, likeScore);
+        filmDbStorage.addScore(filmId1, userId1, 5);
+        filmDbStorage.addScore(filmId1, userId2, 6);
+        filmDbStorage.addScore(filmId2, userId1, 7);
+        filmDbStorage.addScore(filmId2, userId2, 8);
+        filmDbStorage.addScore(filmId3, userId2, 9);
 
         List<Film> actualRecommendations = userService.getFilmRecommendations(userId1);
         List<Film> expectedRecommendations = new ArrayList<>();
@@ -107,10 +107,10 @@ class UserServiceTest {
 
         int userId1 = user1.getId(), userId2 = user2.getId();
 
-        filmDbStorage.addLike(filmId1, userId1, likeScore);
-        filmDbStorage.addLike(filmId1, userId2, likeScore);
-        filmDbStorage.addLike(filmId2, userId1, likeScore);
-        filmDbStorage.addLike(filmId2, userId2, likeScore);
+        filmDbStorage.addScore(filmId1, userId1, likeScore);
+        filmDbStorage.addScore(filmId1, userId2, likeScore);
+        filmDbStorage.addScore(filmId2, userId1, likeScore);
+        filmDbStorage.addScore(filmId2, userId2, likeScore);
 
         List<Film> actualRecommendations = userService.getFilmRecommendations(userId1);
         List<Film> expectedRecommendations = new ArrayList<>();

@@ -9,25 +9,27 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.OperationType;
+import ru.yandex.practicum.filmorate.service.predictor.Predictor;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final Predictor predictor;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("slopeOneScorePredictor") Predictor predictor) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.predictor = predictor;
     }
 
     public User createUser(User user) {
@@ -65,18 +67,11 @@ public class UserService {
     }
 
     public List<Film> getFilmRecommendations(int userId) {
-        int otherUserId = userStorage.getOtherUserIdWithCommonInterests(userId);
-        List<Film> userLikedFilms = filmStorage.getFilmsLikedByUser(userId);
-        List<Film> otherUserLikedFilms = filmStorage.getFilmsLikedByUser(otherUserId);
-
-        Set<Film> union = new HashSet<>(userLikedFilms);
-        union.addAll(otherUserLikedFilms);
-        union.removeAll(userLikedFilms);
-
-        return new ArrayList<>(union);
+        return predictor.recommendFilms(userId);
     }
 
     public void deleteUserById(int userId) {
         userStorage.deleteUserById(userId);
     }
+
 }

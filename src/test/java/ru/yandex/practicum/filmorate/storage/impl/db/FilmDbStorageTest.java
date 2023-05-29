@@ -39,9 +39,9 @@ public class FilmDbStorageTest {
     void shouldBeSize0CorrectDeleteFilm() {
         Film film = createFilm();
         filmDbStorage.createFilm(film);
-        System.out.println("DEBUG: " + filmDbStorage.getFilms());
-        filmDbStorage.deleteFilmById(filmDbStorage.getFilms().stream().findFirst().get().getId());
-        assertEquals(filmDbStorage.getFilms().size(), 0);
+        System.out.println("DEBUG: " + filmDbStorage.getAllFilms());
+        filmDbStorage.deleteFilmById(filmDbStorage.getAllFilms().stream().findFirst().get().getId());
+        assertEquals(filmDbStorage.getAllFilms().size(), 0);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class FilmDbStorageTest {
 
     @Test
     void shouldReturnEmptyCollectionOfAllFilms() {
-        assertEquals(0, filmDbStorage.getFilms().size());
+        assertEquals(0, filmDbStorage.getAllFilms().size());
     }
 
     @Test
@@ -281,7 +281,7 @@ public class FilmDbStorageTest {
         filmOne.setId(filmDbStorage.createFilm(filmOne).getId());
         filmTwo.setId(filmDbStorage.createFilm(filmTwo).getId());
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
-        filmDbStorage.addLike(filmThree.getId(), userId, likeScore);
+        filmDbStorage.addLike(filmThree.getId(), userId);
         Collection<Film> expected = List.of(filmThree, filmOne, filmTwo);
         Collection<Film> filmsDirectorSortedByLikes =
                 filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "likes");

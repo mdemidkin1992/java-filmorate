@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.aspects.annotation.SaveUserEvent;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -47,16 +46,17 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmStorage.getAllFilms();
+    }
+
+    @SaveUserEvent(eventType = EventType.SCORE, operation = OperationType.ADD, entityIdParamName = "filmId")
+    public void addScore(int filmId, int userId, int likeScore) {
+        filmStorage.addScore(filmId, userId, likeScore);
     }
 
     @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.ADD, entityIdParamName = "filmId")
-    public void addLike(int filmId,int userId, int likeScore) {
-        if (likeScore < 1 || likeScore > 10) {
-            new ValidationException("The LikeScore must be from 1 to 10.");
-        } else {
-            filmStorage.addLike(filmId, userId, likeScore);
-        }
+    public void addLike(int filmId, int userId) {
+        filmStorage.addLike(filmId, userId);
     }
 
     @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.REMOVE, entityIdParamName = "filmId")

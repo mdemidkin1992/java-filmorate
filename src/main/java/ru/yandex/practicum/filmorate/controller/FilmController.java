@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -41,17 +43,25 @@ public class FilmController {
         return filmService.getFilmById(filmId);
     }
 
-    @PutMapping("{id}/like/{userId}/{likeScore}")
+    @PutMapping("{id}/like/{userId}")
     public void addLike(@PathVariable("id") int filmId,
-                        @PathVariable("userId") int userId,
-                        @NotNull @PathVariable ("likeScore") int likeScore) {
-        filmService.addLike(filmId, userId, likeScore);
+                        @PathVariable("userId") int userId) {
+        filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") int filmId,
                            @PathVariable("userId") int userId) {
         filmService.deleteLike(filmId, userId);
+    }
+
+    @PutMapping("{id}/score/{userId}")
+    public void addScore(
+            @PathVariable("id") int filmId,
+            @PathVariable("userId") int userId,
+            @RequestParam(defaultValue = "10", required = false) @Min(1) @Max(10) int score
+    ) {
+        filmService.addScore(filmId, userId, score);
     }
 
     @GetMapping("/popular")
