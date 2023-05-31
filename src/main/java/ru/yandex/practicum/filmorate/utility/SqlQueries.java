@@ -37,14 +37,14 @@ public final class SqlQueries {
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID";
 
-    public static final String GET_FILMS_WHERE_ID_EQUALS =
+    public static final String GET_FILMS_SORTED =
             "SELECT * FROM FILMS f " +
-                    "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                    "LEFT JOIN (SELECT s.FILM_ID, round(AVG(s.SCORE),1) AS AVG_SCORE FROM SCORES s GROUP BY s.FILM_ID) temp ON f.FILM_ID = temp.FILM_ID " +
+                    "LEFT JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID " +
-                    "WHERE f.FILM_ID IN (?)";
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID";
 
     public static final String GET_FILM =
             "SELECT * FROM FILMS f " +
@@ -208,5 +208,4 @@ public final class SqlQueries {
 
     // SCORES
     public static final String GET_SCORES = "SELECT * FROM SCORES";
-    public static final String GET_SCORES_BY_USER_ID = "SELECT SCORE FROM SCORES WHERE USER_ID = ? AND FILM_ID = ?";
 }

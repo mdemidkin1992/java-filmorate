@@ -77,7 +77,7 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsWhereIdEquals(List<Integer> filmsIds) {
         String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
-        String sql = String.format(SqlQueries.GET_FILMS + " WHERE f.FILM_ID IN (%s)", inSql);
+        String sql = String.format(SqlQueries.GET_FILMS_SORTED + " WHERE f.FILM_ID IN (%s) ORDER BY temp.AVG_SCORE DESC", inSql);
         return jdbcTemplate.query(sql, new FilmResultSetExtractor(), filmsIds.toArray());
     }
 
@@ -179,12 +179,6 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
             }
         }
     }
-
-   //todo реализовать метод getFilmsLikeWithScoreByUser
-   /* public List<Film> getFilmsLikeWithScoreByUser(int userId) {
-        jdbcTemplate.query(SqlQueries.GET_SCORES_BY_USER_ID, new FilmResultSetExtractor(), userId);
-
-    }*/
 
     @Override
     public void deleteFilmById(int filmId) {

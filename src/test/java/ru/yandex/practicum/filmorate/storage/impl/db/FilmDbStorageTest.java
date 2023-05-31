@@ -243,7 +243,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    void shouldReturnCollectionOfFilmsSortedByLikesWhenDirectorIsFound() {
+    void shouldReturnCollectionOfFilmsSortedByScoresWhenDirectorIsFound() {
         int likeScore = 8;
 
         User user = User.builder()
@@ -283,12 +283,12 @@ public class FilmDbStorageTest {
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
         filmDbStorage.addScore(filmThree.getId(), userId, likeScore);
         Collection<Film> expected = List.of(filmThree, filmOne, filmTwo);
-        Collection<Film> filmsDirectorSortedByLikes =
+        Collection<Film> filmsDirectorSortedByScores =
                 filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "scores");
         System.out.println("DEBUG:" + expected);
-        System.out.println("DEBUG:" + filmsDirectorSortedByLikes);
-        assertEquals(3, filmsDirectorSortedByLikes.size());
-        assertEquals(expected, filmsDirectorSortedByLikes);
+        System.out.println("DEBUG:" + filmsDirectorSortedByScores);
+        assertEquals(3, filmsDirectorSortedByScores.size());
+        assertEquals(expected, filmsDirectorSortedByScores);
     }
 
     @AfterEach

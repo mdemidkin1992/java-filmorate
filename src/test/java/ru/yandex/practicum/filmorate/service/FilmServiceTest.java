@@ -88,28 +88,6 @@ class FilmServiceTest {
         assertEquals(expectedRecommendations, actualRecommendations);
     }
 
-    //todo
-    @Test
-    public void souldCalculateAvrScore() {
-        int scoreFromUser1ToFilm1 = 8;
-
-        Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
-                .releaseDate(LocalDate.of(1997, 01, 1))
-                .duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
-        film1.setGenres(new ArrayList<>(Arrays.asList(Genre.builder().id(3).name("Мультфильм").build())));
-        User user1 = User.builder().name("User1").login("User1login").email("User1@email.com")
-                .birthday(LocalDate.of(1992, 1, 2)).build();
-
-        Film filmForTest1 = filmDbStorage.createFilm(film1);
-
-        userDbStorage.createUser(user1);
-        filmDbStorage.addScore(filmForTest1.getId(), user1.getId(), scoreFromUser1ToFilm1);
-
-
-        assertEquals(scoreFromUser1ToFilm1, filmDbStorage.getFilmsLikeWithScoreByUser(user1.getId(), film1.getId()));
-
-    }
-
     @Test
     public void getPopularFilmsWithParametresTest() {
         Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
