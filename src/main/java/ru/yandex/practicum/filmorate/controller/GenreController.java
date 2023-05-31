@@ -24,15 +24,11 @@ public class GenreController {
 
     @GetMapping
     public List<Genre> getGenres() {
-        log.info("Number of genres: {}", filmService.getGenres().size());
         return filmService.getGenres();
     }
 
     @GetMapping("{id}")
     public Genre getGenreById(@PathVariable("id") int genreId) {
-        log.info("GET request received: genre with id \"{}\"", genreId);
-        Genre response = filmService.getGenreById(genreId);
-        log.info("Genre with id \"{}\" : {}", genreId, response.toString());
-        return response;
+        return filmService.getGenreById(genreId);
     }
 }

@@ -48,7 +48,6 @@ public class ReviewDbStorage extends DBStorage implements ReviewStorage {
     public Review getReviewById(int reviewId) {
         Review review = jdbcTemplate.query(SqlQueries.GET_REVIEW, new ReviewMapper(), reviewId).stream().findAny().orElse(null);
         if (review == null) {
-            log.error("Review with id {} doesn't exist", reviewId);
             throw new FilmNotFoundException("Review with id " + reviewId + " doesn't exist");
         }
         return review;

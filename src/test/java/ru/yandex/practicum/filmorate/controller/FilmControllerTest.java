@@ -68,7 +68,7 @@ class FilmControllerTest {
         expected.add(filmDbStorage.getFilmById(filmId1));
         expected.add(filmDbStorage.getFilmById(filmId2));
 
-        List<Film> actual = filmDbStorage.getFilms();
+        List<Film> actual = filmDbStorage.getAllFilms();
         assertEquals(expected, actual, "Not all films were added to storage.");
     }
 
@@ -96,7 +96,7 @@ class FilmControllerTest {
     }
 
     @Test
-    public void shouldAddLikeFromUserWithCorrectId() {
+    public void shouldAddScoresFromUserWithCorrectId() {
         Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
         Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).build()).build();
 
@@ -118,23 +118,25 @@ class FilmControllerTest {
         userDbStorage.createUser(user5);
 
         int userId1 = user1.getId(), userId2 = user2.getId(), userId3 = user3.getId(), userId4 = user4.getId(), userId5 = user5.getId();
+        int likeScore1 = 5;
+        int likeScore2 = 8;
 
-        filmDbStorage.addLike(filmId1, userId1);
-        filmDbStorage.addLike(filmId1, userId2);
-        filmDbStorage.addLike(filmId2, userId3);
-        filmDbStorage.addLike(filmId2, userId4);
-        filmDbStorage.addLike(filmId2, userId5);
+        filmDbStorage.addScore(filmId1, userId1, likeScore1);
+        filmDbStorage.addScore(filmId1, userId2, likeScore1);
+        filmDbStorage.addScore(filmId2, userId3, likeScore2);
+        filmDbStorage.addScore(filmId2, userId4, likeScore2);
+        filmDbStorage.addScore(filmId2, userId5, likeScore2);
 
         final int count = 2;
         final List<Film> expectedPopularFilms = new ArrayList<>();
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
+        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
 
         final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
         assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
 
-        filmDbStorage.deleteLike(filmId1, userId1);
-        filmDbStorage.deleteLike(filmId1, userId2);
+        filmDbStorage.deleteScore(filmId1, userId1);
+        filmDbStorage.deleteScore(filmId1, userId2);
 
         expectedPopularFilms.clear();
         expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
@@ -155,7 +157,7 @@ class FilmControllerTest {
         filmDbStorage.createFilm(film2);
         filmDbStorage.createFilm(film1);
 
-        List<Film> actual = filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "YEAR");
+        List<Film> actual = filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "YEAR");
         List<Film> expected = new ArrayList<>();
         expected.add(film1);
         expected.add(film2);
@@ -173,25 +175,27 @@ class FilmControllerTest {
     }
 
     @Test
-    public void shouldNotAddLikeWhenUserIdIsIncorrect() {
+    public void shouldNotAddScoreWhenUserIdIsIncorrect() {
         Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
         filmDbStorage.createFilm(film1);
         int filmId1 = film1.getId();
         int userId = 999;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addLike(filmId1, userId));
+        int likeScore = 5;
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addScore(filmId1, userId, likeScore));
         String expectedMessage = "User with id " + userId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
-    public void shouldNotAddLikeWhenFilmIdIsIncorrect() {
+    public void shouldNotAddScoreWhenFilmIdIsIncorrect() {
         int filmId = 999;
+        int likeScore = 5;
         User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
         userDbStorage.createUser(user1);
         int userId1 = user1.getId();
 
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addLike(filmId, userId1));
+        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addScore(filmId, userId1, likeScore));
         String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);

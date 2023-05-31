@@ -28,7 +28,6 @@ public class RatingsDbStorage extends DBStorage implements RatingStorage {
     public Rating getRatingById(int ratingId) {
         Rating mpa = jdbcTemplate.query(SqlQueries.GET_RATING, new RatingMapper(), ratingId).stream().findAny().orElse(null);
         if (mpa == null) {
-            log.error("Rating with id {} doesn't exist", ratingId);
             throw new RatingNotFoundException("Rating with id " + ratingId + " doesn't exist");
         }
         return mpa;

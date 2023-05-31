@@ -27,7 +27,6 @@ public class DirectorDbStorage extends DBStorage implements DirectorStorage {
                 .withTableName("DIRECTORS")
                 .usingGeneratedKeyColumns("DIRECTOR_ID");
         director.setId(simpleJdbcInsert.executeAndReturnKey(director.toMap()).intValue());
-        log.info("{} created", director);
         return director;
     }
 
@@ -38,7 +37,6 @@ public class DirectorDbStorage extends DBStorage implements DirectorStorage {
         if (queryResult > 0) {
             return director;
         }
-        log.warn("Director id \"{}\" not found", director.getId());
         throw new DirectorNotFoundException(String.format("Director id \"%d\" not found", director.getId()));
     }
 
@@ -47,7 +45,6 @@ public class DirectorDbStorage extends DBStorage implements DirectorStorage {
         try {
             return jdbcTemplate.queryForObject(SqlQueries.GET_DIRECTOR, new DirectorMapper(), directorId);
         } catch (DataAccessException e) {
-            log.warn("Director id \"{}\" not found", directorId);
             throw new DirectorNotFoundException(String.format("Director id \"%d\" not found", directorId));
         }
     }
@@ -61,10 +58,8 @@ public class DirectorDbStorage extends DBStorage implements DirectorStorage {
     public boolean deleteDirector(int directorId) {
         int queryResult = jdbcTemplate.update(SqlQueries.DELETE_DIRECTOR, directorId);
         if (queryResult > 0) {
-            log.info("Director id \"{}\" deleted", directorId);
             return true;
         }
-        log.warn("Director id \"{}\" not found", directorId);
         throw new DirectorNotFoundException(String.format("Director id \"%d\" not found", directorId));
     }
 

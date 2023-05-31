@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -62,30 +63,36 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     public Film getFilmById(int filmId) {
         Film film = jdbcTemplate.query(SqlQueries.GET_FILM, new FilmResultSetExtractor(), filmId).stream().findAny().orElse(null);
         if (film == null) {
-            log.error("Film with id {} doesn't exist", filmId);
             throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
         }
         return film;
     }
 
     @Override
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         return jdbcTemplate.query(SqlQueries.GET_FILMS,
                 new FilmResultSetExtractor());
     }
 
     @Override
-    public void addLike(int filmId, int userId) {
-        userStorage.getUserById(userId);
-        getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId, userId);
+    public List<Film> getFilmsWhereIdEquals(List<Integer> filmsIds) {
+        String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
+        String sql = String.format(SqlQueries.GET_FILMS_SORTED + " WHERE f.FILM_ID IN (%s) ORDER BY temp.AVG_SCORE DESC", inSql);
+        return jdbcTemplate.query(sql, new FilmResultSetExtractor(), filmsIds.toArray());
     }
 
     @Override
-    public void deleteLike(int filmId, int userId) {
+    public void addScore(int filmId, int userId, int score) {
         userStorage.getUserById(userId);
         getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.DELETE_LIKE, filmId, userId);
+        jdbcTemplate.update(SqlQueries.ADD_SCORE, filmId,  userId, score);
+    }
+
+    @Override
+    public void deleteScore(int filmId, int userId) {
+        userStorage.getUserById(userId);
+        getFilmById(filmId);
+        jdbcTemplate.update(SqlQueries.DELETE_SCORE, filmId, userId);
     }
 
     @Override
@@ -126,20 +133,19 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
+    public List<Film> findAllFilmsByDirectorSortedByYearOrScores(int directorId, String sortBy) {
         String sqlQuery;
         switch (sortBy) {
             case "YEAR":
                 sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_YEAR;
                 break;
-            case "LIKES":
+            case "SCORES":
             default:
-                sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_LIKES;
+                sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_SCORES;
         }
 
         List<Film> foundFilms = jdbcTemplate.query(sqlQuery, new FilmResultSetExtractor(), directorId);
         if (foundFilms.isEmpty()) {
-            log.warn("Films with director id \"{}\" not found", directorId);
             throw new DirectorNotFoundException(String.format("Films with director id \"%d\" not found", directorId));
         }
 
@@ -147,15 +153,36 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsLikedByUser(int userId) {
-        return jdbcTemplate.query(SqlQueries.GET_USERS_LIKES,
+    public List<Film> getFilmsScoredByUser(int userId) {
+        return jdbcTemplate.query(SqlQueries.GET_USERS_SCORES,
                 new FilmResultSetExtractor(), userId);
+    }
+
+    @Override
+    public void getFilmScoresStats(
+            Map<Integer, HashMap<Integer, Double>> inputData,
+            List<Integer> allFilmsIds
+    ) {
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(SqlQueries.GET_SCORES);
+
+        while (rs.next()) {
+            int userDbId = rs.getInt("USER_ID");
+            int filmDbId = rs.getInt("FILM_ID");
+            double filmDbScore = rs.getDouble("SCORE");
+
+            HashMap<Integer, Double> scores = inputData.getOrDefault(userDbId, new HashMap<>());
+            scores.put(filmDbId, filmDbScore);
+            inputData.put(userDbId, scores);
+
+            if (!allFilmsIds.contains(filmDbId)) {
+                allFilmsIds.add(filmDbId);
+            }
+        }
     }
 
     @Override
     public void deleteFilmById(int filmId) {
         if (getFilmById(filmId) == null) {
-            log.error("Film with id {} doesn't exist", filmId);
             throw new FilmNotFoundException("Film with id " + filmId + " doesn't exist");
         }
         jdbcTemplate.update(SqlQueries.DELETE_FILMS_BY_ID, filmId);
@@ -202,7 +229,7 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM APP_USERS");
         jdbcTemplate.update("DELETE FROM FILMS");
         jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM LIKES");
+        jdbcTemplate.update("DELETE FROM SCORES");
         jdbcTemplate.update("DELETE FROM FRIENDS");
     }
 }
