@@ -186,6 +186,9 @@ public final class SqlQueries {
     public static final String GET_DIRECTOR = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
     public static final String UPDATE_DIRECTOR = "UPDATE DIRECTORS SET DIRECTOR_NAME = ? WHERE DIRECTOR_ID = ?";
     public static final String DELETE_DIRECTOR = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID = ?";
+    public static final String CLEAR_TABLE_AND_RESET_ID =
+            "DELETE FROM DIRECTORS; " +
+                    "ALTER TABLE DIRECTORS ALTER COLUMN DIRECTOR_ID RESTART WITH 1";
 
     // REVIEWS
     public static final String GET_REVIEWS = "SELECT * FROM REVIEWS_VIEW ORDER BY USEFUL DESC LIMIT ?";

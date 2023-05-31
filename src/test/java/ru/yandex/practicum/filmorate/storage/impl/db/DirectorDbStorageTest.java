@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl.db;
 
+import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -21,11 +22,11 @@ public class DirectorDbStorageTest {
     @Autowired
     private DirectorDbStorage directorDbStorage;
 
+    private final EasyRandom generator = new EasyRandom();
+
     @Test
     void shouldCreateDirector() {
-        Director director = Director.builder()
-                .name("Quentin Tarantino")
-                .build();
+        Director director = generator.nextObject(Director.class);
         Director createdDirector = directorDbStorage.createDirector(director);
         assertNotNull(createdDirector);
         director.setId(createdDirector.getId());
@@ -34,9 +35,7 @@ public class DirectorDbStorageTest {
 
     @Test
     void shouldUpdateDirector() {
-        Director director = Director.builder()
-                .name("Quentin Tarantino")
-                .build();
+        Director director = generator.nextObject(Director.class);
         int id = directorDbStorage.createDirector(director).getId();
         Director updatedDirector = Director.builder()
                 .id(id)
@@ -48,24 +47,16 @@ public class DirectorDbStorageTest {
 
     @Test
     void shouldGetDirectorById() {
-        Director director = Director.builder()
-                .name("Quentin Tarantino")
-                .build();
+        Director director = generator.nextObject(Director.class);
         director.setId(directorDbStorage.createDirector(director).getId());
         assertEquals(director, directorDbStorage.getDirectorById(director.getId()));
     }
 
     @Test
     void shouldReturnCollectionOfAllDirectors() {
-        Director directorOne = Director.builder()
-                .name("Quentin Tarantino")
-                .build();
-        Director directorTwo = Director.builder()
-                .name("Tarantino")
-                .build();
-        Director directorThree = Director.builder()
-                .name("Quentin")
-                .build();
+        Director directorOne = generator.nextObject(Director.class);
+        Director directorTwo = generator.nextObject(Director.class);
+        Director directorThree = generator.nextObject(Director.class);
         directorOne.setId(directorDbStorage.createDirector(directorOne).getId());
         directorTwo.setId(directorDbStorage.createDirector(directorTwo).getId());
         directorThree.setId(directorDbStorage.createDirector(directorThree).getId());
@@ -77,15 +68,9 @@ public class DirectorDbStorageTest {
 
     @Test
     void shouldReturnCollectionOfTwoDirectorsAfterDeleting() {
-        Director directorOne = Director.builder()
-                .name("Quentin Tarantino")
-                .build();
-        Director directorTwo = Director.builder()
-                .name("Tarantino")
-                .build();
-        Director directorThree = Director.builder()
-                .name("Quentin")
-                .build();
+        Director directorOne = generator.nextObject(Director.class);
+        Director directorTwo = generator.nextObject(Director.class);
+        Director directorThree = generator.nextObject(Director.class);
         directorOne.setId(directorDbStorage.createDirector(directorOne).getId());
         directorTwo.setId(directorDbStorage.createDirector(directorTwo).getId());
         directorThree.setId(directorDbStorage.createDirector(directorThree).getId());

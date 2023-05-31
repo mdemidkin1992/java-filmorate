@@ -67,4 +67,8 @@ public class DirectorDbStorage extends DBStorage implements DirectorStorage {
         log.warn("Director id \"{}\" not found", directorId);
         throw new DirectorNotFoundException(String.format("Director id \"%d\" not found", directorId));
     }
+
+    public void clearTableAndResetId() {
+        jdbcTemplate.update(SqlQueries.CLEAR_TABLE_AND_RESET_ID);
+    }
 }
