@@ -82,13 +82,6 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(int filmId, int userId) {
-        userStorage.getUserById(userId);
-        getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.ADD_LIKE, filmId,  userId);
-    }
-
-    @Override
     public void addScore(int filmId, int userId, int score) {
         userStorage.getUserById(userId);
         getFilmById(filmId);
@@ -96,10 +89,10 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteLike(int filmId, int userId) {
+    public void deleteScore(int filmId, int userId) {
         userStorage.getUserById(userId);
         getFilmById(filmId);
-        jdbcTemplate.update(SqlQueries.DELETE_LIKE, filmId, userId);
+        jdbcTemplate.update(SqlQueries.DELETE_SCORE, filmId, userId);
     }
 
     @Override
@@ -140,15 +133,15 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
+    public List<Film> findAllFilmsByDirectorSortedByYearOrScores(int directorId, String sortBy) {
         String sqlQuery;
         switch (sortBy) {
             case "YEAR":
                 sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_YEAR;
                 break;
-            case "LIKES":
+            case "SCORES":
             default:
-                sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_LIKES;
+                sqlQuery = SqlQueries.FIND_ALL_FILMS_BY_DIRECTOR_SORTED_BY_SCORES;
         }
 
         List<Film> foundFilms = jdbcTemplate.query(sqlQuery, new FilmResultSetExtractor(), directorId);
@@ -160,8 +153,8 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsLikedByUser(int userId) {
-        return jdbcTemplate.query(SqlQueries.GET_USERS_LIKES,
+    public List<Film> getFilmsScoredByUser(int userId) {
+        return jdbcTemplate.query(SqlQueries.GET_USERS_SCORES,
                 new FilmResultSetExtractor(), userId);
     }
 
@@ -186,6 +179,12 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
             }
         }
     }
+
+   //todo реализовать метод getFilmsLikeWithScoreByUser
+   /* public List<Film> getFilmsLikeWithScoreByUser(int userId) {
+        jdbcTemplate.query(SqlQueries.GET_SCORES_BY_USER_ID, new FilmResultSetExtractor(), userId);
+
+    }*/
 
     @Override
     public void deleteFilmById(int filmId) {
@@ -236,7 +235,7 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM APP_USERS");
         jdbcTemplate.update("DELETE FROM FILMS");
         jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM LIKES");
+        jdbcTemplate.update("DELETE FROM SCORES");
         jdbcTemplate.update("DELETE FROM FRIENDS");
     }
 }

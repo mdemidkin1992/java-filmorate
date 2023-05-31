@@ -54,14 +54,9 @@ public class FilmService {
         filmStorage.addScore(filmId, userId, likeScore);
     }
 
-    @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.ADD, entityIdParamName = "filmId")
-    public void addLike(int filmId, int userId) {
-        filmStorage.addLike(filmId, userId);
-    }
-
-    @SaveUserEvent(eventType = EventType.LIKE, operation = OperationType.REMOVE, entityIdParamName = "filmId")
-    public void deleteLike(int filmId, int userId) {
-        filmStorage.deleteLike(filmId, userId);
+    @SaveUserEvent(eventType = EventType.SCORE, operation = OperationType.REMOVE, entityIdParamName = "filmId")
+    public void deleteScore(int filmId, int userId) {
+        filmStorage.deleteScore(filmId, userId);
     }
 
     public List<Film> getPopularFilmsByGenreIdAndYear(int count, Integer genreId, Integer year) {
@@ -97,13 +92,13 @@ public class FilmService {
         }
     }
 
-    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(int directorId, String sortBy) {
-        return filmStorage.findAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy.toUpperCase());
+    public List<Film> getAllFilmsByDirectorSortedByYearOrScores(int directorId, String sortBy) {
+        return filmStorage.findAllFilmsByDirectorSortedByYearOrScores(directorId, sortBy.toUpperCase());
     }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        List<Film> userFilms = filmStorage.getFilmsLikedByUser(userId);
-        List<Film> friendFilms = filmStorage.getFilmsLikedByUser(friendId);
+        List<Film> userFilms = filmStorage.getFilmsScoredByUser(userId);
+        List<Film> friendFilms = filmStorage.getFilmsScoredByUser(friendId);
 
         Set<Film> intersection = new HashSet<>(userFilms);
         intersection.retainAll(friendFilms);

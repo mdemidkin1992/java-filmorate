@@ -20,15 +20,12 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
     private final Predictor predictor;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("slopeOneScorePredictor") Predictor predictor) {
         this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
         this.predictor = predictor;
     }
 

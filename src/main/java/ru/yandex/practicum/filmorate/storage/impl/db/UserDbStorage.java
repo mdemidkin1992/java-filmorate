@@ -96,40 +96,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     }
 
     @Override
-    public int getOtherUserIdWithCommonInterests(int userId) {
-        Map<Integer, List<Integer>> userLikes = new HashMap<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM LIKES");
-
-        while (rs.next()) {
-            int userDbId = rs.getInt("USER_ID");
-            int filmDbId = rs.getInt("FILM_ID");
-
-            List<Integer> likes = userLikes.getOrDefault(userDbId, new ArrayList<>());
-            likes.add(filmDbId);
-            userLikes.put(userDbId, likes);
-        }
-
-        List<Integer> likedFilms = userLikes.get(userId);
-        int maxCount = Integer.MIN_VALUE;
-        int otherUserIdWithCommonInterests = -1;
-
-        for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
-            if (entry.getKey() != userId) {
-                List<Integer> otherUserLikes = entry.getValue();
-                List<Integer> intersection = likedFilms.stream().filter(otherUserLikes::contains).collect(Collectors.toList());
-                int intersectionCount = intersection.size();
-
-                if (intersectionCount > maxCount) {
-                    maxCount = intersectionCount;
-                    otherUserIdWithCommonInterests = entry.getKey();
-                }
-            }
-        }
-
-        return otherUserIdWithCommonInterests;
-    }
-
-    @Override
     public void deleteUserById(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER,new UserMapper(),userId).stream().findAny().orElse(null);
         if (user == null) {
@@ -155,7 +121,7 @@ public class UserDbStorage extends DBStorage implements UserStorage {
         jdbcTemplate.update("DELETE FROM APP_USERS");
         jdbcTemplate.update("DELETE FROM FILMS");
         jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM LIKES");
+        jdbcTemplate.update("DELETE FROM SCORES");
         jdbcTemplate.update("DELETE FROM FRIENDS");
     }
 }

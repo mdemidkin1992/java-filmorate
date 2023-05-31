@@ -43,25 +43,19 @@ public class FilmController {
         return filmService.getFilmById(filmId);
     }
 
-    @PutMapping("{id}/like/{userId}")
-    public void addLike(@PathVariable("id") int filmId,
-                        @PathVariable("userId") int userId) {
-        filmService.addLike(filmId, userId);
-    }
-
-    @DeleteMapping("{id}/like/{userId}")
-    public void deleteLike(@PathVariable("id") int filmId,
-                           @PathVariable("userId") int userId) {
-        filmService.deleteLike(filmId, userId);
-    }
-
     @PutMapping("{id}/score/{userId}")
     public void addScore(
             @PathVariable("id") int filmId,
             @PathVariable("userId") int userId,
-            @RequestParam(defaultValue = "10", required = false) @Min(1) @Max(10) int score
+            @RequestParam @NotNull @Min(1) @Max(10) int score
     ) {
         filmService.addScore(filmId, userId, score);
+    }
+
+    @DeleteMapping("{id}/like/{userId}")
+    public void deleteScore(@PathVariable("id") int filmId,
+                            @PathVariable("userId") int userId) {
+        filmService.deleteScore(filmId, userId);
     }
 
     @GetMapping("/popular")
@@ -87,7 +81,7 @@ public class FilmController {
     @GetMapping("/director/{id}")
     public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(
             @PathVariable("id") int directorId, @RequestParam String sortBy) {
-        return filmService.getAllFilmsByDirectorSortedByYearOrLikes(directorId, sortBy);
+        return filmService.getAllFilmsByDirectorSortedByYearOrScores(directorId, sortBy);
     }
 
     @DeleteMapping("/{filmId}")

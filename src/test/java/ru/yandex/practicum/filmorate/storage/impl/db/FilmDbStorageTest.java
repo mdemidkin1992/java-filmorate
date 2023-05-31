@@ -235,7 +235,7 @@ public class FilmDbStorageTest {
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
         Collection<Film> expected = List.of(filmOne, filmTwo, filmThree);
         Collection<Film> filmsDirectorSortedByYear =
-                filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "year");
+                filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "year");
         System.out.println("DEBUG:" + expected);
         System.out.println("DEBUG:" + filmsDirectorSortedByYear);
         assertEquals(3, filmsDirectorSortedByYear.size());
@@ -281,10 +281,10 @@ public class FilmDbStorageTest {
         filmOne.setId(filmDbStorage.createFilm(filmOne).getId());
         filmTwo.setId(filmDbStorage.createFilm(filmTwo).getId());
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
-        filmDbStorage.addLike(filmThree.getId(), userId);
+        filmDbStorage.addScore(filmThree.getId(), userId, likeScore);
         Collection<Film> expected = List.of(filmThree, filmOne, filmTwo);
         Collection<Film> filmsDirectorSortedByLikes =
-                filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "likes");
+                filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "scores");
         System.out.println("DEBUG:" + expected);
         System.out.println("DEBUG:" + filmsDirectorSortedByLikes);
         assertEquals(3, filmsDirectorSortedByLikes.size());

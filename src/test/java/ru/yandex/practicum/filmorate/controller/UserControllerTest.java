@@ -74,7 +74,7 @@ class UserControllerTest {
         userDbStorage.createUser(user5);
 
         int userId1 = user1.getId(), userId2 = user2.getId();
-        int friendId1 = user3.getId(), friendId2 = user4.getId(), friendId3 = user5.getId();
+        int friendId2 = user4.getId(), friendId3 = user5.getId();
 
         userDbStorage.addFriend(userId1, friendId2);
         userDbStorage.addFriend(userId1, friendId3);
@@ -87,7 +87,6 @@ class UserControllerTest {
         expectedUser1FriendList.add(userDbStorage.getUserById(friendId3));
 
         List<User> actualUser1FriendsList = userDbStorage.getFriends(userId1);
-        List<User> actualUser2FriendsList = userDbStorage.getFriends(userId2);
 
         List<User> expectedCommonFriends = new LinkedList<>();
         expectedCommonFriends.add(userDbStorage.getUserById(friendId3));

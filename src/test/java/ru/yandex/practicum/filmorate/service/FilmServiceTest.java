@@ -31,6 +31,7 @@ class FilmServiceTest {
 
     @Test
     public void shouldGetCommonFilms() {
+        int likeScore = 8;
 
         Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).build();
         Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).name("PG-13").build()).build();
@@ -40,7 +41,7 @@ class FilmServiceTest {
         filmDbStorage.createFilm(film2);
         filmDbStorage.createFilm(film3);
 
-        int filmId1 = film1.getId(), filmId2 = film2.getId(), filmId3 = film3.getId();
+        int filmId1 = film1.getId();
 
         User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
         User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
@@ -50,8 +51,8 @@ class FilmServiceTest {
 
         int userId1 = user1.getId(), userId2 = user2.getId();
 
-        filmDbStorage.addLike(filmId1, userId1);
-        filmDbStorage.addLike(filmId1, userId2);
+        filmDbStorage.addScore(filmId1, userId1, likeScore);
+        filmDbStorage.addScore(filmId1, userId2, likeScore);
 
         List<Film> actualCommonFilms = filmService.getCommonFilms(userId1, userId2);
         List<Film> expectedCommonFilms = new ArrayList<>();
@@ -87,8 +88,9 @@ class FilmServiceTest {
         assertEquals(expectedRecommendations, actualRecommendations);
     }
 
-    /*@Test
-    public void setWrongLikeScore() {
+    //todo
+    @Test
+    public void souldCalculateAvrScore() {
         int scoreFromUser1ToFilm1 = 8;
 
         Film film1 = Film.builder().name("Фильм 1").description("Описание 1")
@@ -101,10 +103,12 @@ class FilmServiceTest {
         Film filmForTest1 = filmDbStorage.createFilm(film1);
 
         userDbStorage.createUser(user1);
-        filmDbStorage.addLike(filmForTest1.getId(), user1.getId(), scoreFromUser1ToFilm1);
+        filmDbStorage.addScore(filmForTest1.getId(), user1.getId(), scoreFromUser1ToFilm1);
 
 
-    }*/
+        assertEquals(scoreFromUser1ToFilm1, filmDbStorage.getFilmsLikeWithScoreByUser(user1.getId(), film1.getId()));
+
+    }
 
     @Test
     public void getPopularFilmsWithParametresTest() {

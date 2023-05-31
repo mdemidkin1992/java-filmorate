@@ -34,10 +34,12 @@ public class SlopeOneScorePredictor implements Predictor {
         predict(inputData);
         List<Integer> recommendationsId = new ArrayList<>();
 
-        for (int filmId : outputData.get(userId).keySet()) {
-            if (!inputData.get(userId).containsKey(filmId)
-                    && outputData.get(userId).get(filmId) > MIN_RECOMMENDATION_SCORE) {
-                recommendationsId.add(filmId);
+        if (outputData.containsKey(userId)) {
+            for (int filmId : outputData.get(userId).keySet()) {
+                if (!inputData.get(userId).containsKey(filmId)
+                        && outputData.get(userId).get(filmId) > MIN_RECOMMENDATION_SCORE) {
+                    recommendationsId.add(filmId);
+                }
             }
         }
 
@@ -115,5 +117,7 @@ public class SlopeOneScorePredictor implements Predictor {
             outputData.put(e.getKey(), clean);
         }
     }
+
+
 
 }
