@@ -203,6 +203,6 @@ class FilmControllerTest {
 
     @AfterEach
     public void clearDb() {
-        filmDbStorage.clearDb();
+        filmDbStorage.clearTableAndResetIds();
     }
 }

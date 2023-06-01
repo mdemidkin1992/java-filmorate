@@ -77,7 +77,7 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsWhereIdEquals(List<Integer> filmsIds) {
         String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
-        String sql = String.format(SqlQueries.GET_FILMS_SORTED + " WHERE f.FILM_ID IN (%s) ORDER BY temp.AVG_SCORE DESC", inSql);
+        String sql = String.format(SqlQueries.GET_FILMS_SORTED, inSql);
         return jdbcTemplate.query(sql, new FilmResultSetExtractor(), filmsIds.toArray());
     }
 
@@ -225,11 +225,12 @@ public class FilmDbStorage extends DBStorage implements FilmStorage {
         film.setId(keyHolder.getKey().intValue());
     }
 
-    public void clearDb() {
-        jdbcTemplate.update("DELETE FROM APP_USERS");
-        jdbcTemplate.update("DELETE FROM FILMS");
-        jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM SCORES");
-        jdbcTemplate.update("DELETE FROM FRIENDS");
+    public void clearTableAndResetIds() {
+        jdbcTemplate.update(SqlQueries.CLEAR_APP_USERS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_GENRES);
+        jdbcTemplate.update(SqlQueries.CLEAR_SCORES);
+        jdbcTemplate.update(SqlQueries.CLEAR_FRIENDS);
     }
+
 }

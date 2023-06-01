@@ -43,6 +43,6 @@ public class UserDbStorageTest {
 
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearDb();
+        userDbStorage.clearTablesAndResetIds();
     }
 }

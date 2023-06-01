@@ -125,7 +125,7 @@ class UserServiceTest {
 
     @AfterEach
     public void clearDb() {
-        filmDbStorage.clearDb();
-        userDbStorage.clearDb();
+        filmDbStorage.clearTableAndResetIds();
+        userDbStorage.clearTablesAndResetIds();
     }
 }

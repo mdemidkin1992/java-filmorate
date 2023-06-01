@@ -35,7 +35,7 @@ class UserControllerTest {
 
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearDb();
+        userDbStorage.clearTablesAndResetIds();
     }
 
     @Test

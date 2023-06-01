@@ -22,11 +22,13 @@ public final class SqlQueries {
                     "WHERE au.USER_ID = ?";
 
     public static final String DELETE_USER_BY_ID = "DELETE FROM APP_USERS WHERE USER_ID = ?";
+    public static final String CLEAR_APP_USERS_AND_RESET_ID = "DELETE FROM APP_USERS; ALTER TABLE APP_USERS ALTER COLUMN USER_ID RESTART WITH 1";
 
     // FRIENDS
     public static final String GET_FRIENDS = "SELECT * FROM APP_USERS au JOIN FRIENDS f ON au.USER_ID = f.USER_TWO_ID WHERE f.USER_ONE_ID = ?";
     public static final String ADD_FRIEND = "INSERT INTO FRIENDS (USER_ONE_ID, USER_TWO_ID) VALUES (?, ?)";
     public static final String DELETE_FRIEND = "DELETE FROM FRIENDS WHERE USER_ONE_ID = ? AND USER_TWO_ID = ?";
+    public static final String CLEAR_FRIENDS = "DELETE FROM FRIENDS";
 
     // FILMS
     public static final String GET_FILMS =
@@ -44,7 +46,8 @@ public final class SqlQueries {
                     "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
                     "LEFT JOIN GENRES g ON g.GENRE_ID = fg.GENRE_ID " +
                     "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
-                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID";
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = fd.DIRECTOR_ID " +
+                    "WHERE f.FILM_ID IN (%s) ORDER BY temp.AVG_SCORE DESC";
 
     public static final String GET_FILM =
             "SELECT * FROM FILMS f " +
@@ -121,8 +124,9 @@ public final class SqlQueries {
                     "ORDER BY EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE))";
 
     public static final String DELETE_FILMS_BY_ID = "DELETE FROM FILMS WHERE FILM_ID = ?";
+    public static final String CLEAR_FILMS_AND_RESET_ID = "DELETE FROM FILMS; ALTER TABLE FILMS ALTER COLUMN FILM_ID RESTART WITH 1";
 
-    // LIKES
+    // SCORES
     public static final String ADD_SCORE = "INSERT INTO SCORES (FILM_ID, USER_ID, SCORE) VALUES (?, ?, ?)";
     public static final String DELETE_SCORE = "DELETE FROM SCORES WHERE FILM_ID = ? AND USER_ID = ?";
     public static final String GET_POPULAR_FILMS =
@@ -168,6 +172,8 @@ public final class SqlQueries {
                     "GROUP BY f.FILM_ID, FG.GENRE_ID " +
                     "ORDER BY temp.AVG_SCORE DESC";
 
+    public static final String CLEAR_SCORES = "DELETE FROM SCORES";
+
     // RATINGS
     public static final String GET_RATINGS = "SELECT * FROM RATINGS";
     public static final String GET_RATING = "SELECT * FROM RATINGS WHERE RATING_ID = ?";
@@ -175,6 +181,7 @@ public final class SqlQueries {
     // GENRES
     public static final String GET_GENRES = "SELECT * FROM GENRES";
     public static final String GET_GENRE = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
+    public static final String CLEAR_FILMS_GENRES = "DELETE FROM FILMS_GENRES";
 
     // EVENTS
     public static final String ADD_EVENT =

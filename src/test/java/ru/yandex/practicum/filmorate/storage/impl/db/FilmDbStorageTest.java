@@ -293,6 +293,6 @@ public class FilmDbStorageTest {
 
     @AfterEach
     public void clearDb() {
-        filmDbStorage.clearDb();
+        filmDbStorage.clearTableAndResetIds();
     }
 }

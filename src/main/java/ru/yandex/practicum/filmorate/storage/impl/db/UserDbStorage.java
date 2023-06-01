@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,8 +13,10 @@ import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component("userDbStorage")
 @Slf4j
@@ -117,11 +118,12 @@ public class UserDbStorage extends DBStorage implements UserStorage {
         user.setId(keyHolder.getKey().intValue());
     }
 
-    public void clearDb() {
-        jdbcTemplate.update("DELETE FROM APP_USERS");
-        jdbcTemplate.update("DELETE FROM FILMS");
-        jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM SCORES");
-        jdbcTemplate.update("DELETE FROM FRIENDS");
+    public void clearTablesAndResetIds() {
+        jdbcTemplate.update(SqlQueries.CLEAR_APP_USERS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_GENRES);
+        jdbcTemplate.update(SqlQueries.CLEAR_SCORES);
+        jdbcTemplate.update(SqlQueries.CLEAR_FRIENDS);
     }
+
 }
