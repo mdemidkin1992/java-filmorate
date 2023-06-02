@@ -74,6 +74,12 @@ public class CustomEasyRandom {
         return user;
     }
 
+    public static User nextUser(String email) {
+        User user = easyRandom.nextObject(User.class);
+        user.setEmail(email);
+        return user;
+    }
+
     public static Film nextFilm() {
         Film film = easyRandom.nextObject(Film.class);
         film.setMpa(RATING_LIST.get(new Random().nextInt(RATING_LIST.size())));

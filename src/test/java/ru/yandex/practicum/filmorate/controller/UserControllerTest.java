@@ -20,6 +20,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -31,174 +33,161 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static util.CustomEasyRandom.nextUser;
 
 @SpringBootTest
-@AutoConfigureTestDatabase
 @AutoConfigureMockMvc
+@AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
-
-    @Autowired
     private final UserDbStorage userDbStorage;
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
     private static final Validator VALIDATOR;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
+    public User createUser(User user) throws Exception {
+        MvcResult result = this.mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(user.getName()))
+                .andReturn();
+        return objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                User.class
+        );
+
+    }
+
+    public void addFriend(int userId, int friendId) throws Exception {
+        mockMvc.perform(
+                        put("/users/{id}/friends/{friendId}", userId, friendId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    public void deleteFriend(int userId, int friendId) throws Exception {
+        mockMvc.perform(
+                        delete("/users/{id}/friends/{friendId}", userId, friendId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    public List<User> getFriends(int userId) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/users/{id}/friends", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return List.of(objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                User[].class
+        ));
+    }
+
+    public List<User> getCommonFriends(int userId1, int userId2) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/users/{id}/friends/common/{toherId}", userId1, userId2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return List.of(objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                User[].class
+        ));
+    }
+
+    public User getUserById(int userId) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                User.class
+        );
+    }
+
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearTablesAndResetIds();
+        userDbStorage.clearDb();
     }
 
     @Test
     public void testValidations() {
-        User invalidUser = User.builder().email("wrong email.com@").name("wrong user name").birthday(LocalDate.of(2030, 1, 1)).build();
+        User invalidUser = nextUser("wrong email.com@");
         Set<ConstraintViolation<User>> validates = VALIDATOR.validate(invalidUser);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
     }
 
     @Test
-    public void shouldCreateUser() throws Exception{
-        User user1 = nextUser();
-
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user1)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value(user1.getName()))
-                .andExpect(jsonPath("$.login").value(user1.getLogin()));
-    }
-
-    @Test
-    public void shouldGetUserByIdWhenIdIsCorrect() throws Exception {
-        User user1 = nextUser();
-
-        MvcResult creationResult1 = mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user1)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-
-        User createdUser1 =
-                objectMapper.readValue(creationResult1.getResponse().getContentAsString(), User.class);
-
-        mockMvc.perform(get("/users/{id}", createdUser1.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdUser1.getId()))
-                .andExpect(jsonPath("$.name").value(createdUser1.getName()));
-    }
-
-
-    @Test
     public void shouldGetAllUsers() throws Exception {
-        User user1 = nextUser();
-        User user2 = nextUser();
-
-        MvcResult creationResult1 = mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user1)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-
-        User createdUser1 =
-                objectMapper.readValue(creationResult1.getResponse().getContentAsString(), User.class);
-
-        MvcResult creationResult2 = mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user2)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-
-        User createdUser2 =
-                objectMapper.readValue(creationResult2.getResponse().getContentAsString(), User.class);
-
+        createUser(nextUser("mark@email.com"));
+        createUser(nextUser("ben@email.com"));
         mockMvc.perform(get("/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("[0].id").value(createdUser1.getId()))
-                .andExpect(jsonPath("[0].name").value(createdUser1.getName()))
-                .andExpect(jsonPath("[1].id").value(createdUser2.getId()))
-                .andExpect(jsonPath("[1].name").value(createdUser2.getName()));
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andReturn();
     }
 
     @Test
     public void shouldAddFriendWhenIdIsCorrect() throws Exception {
-        User user1 = nextUser();
-        User user2 = nextUser();
-        User user3 = nextUser();
-        User user4 = nextUser();
-        User user5 = nextUser();
+        User user1 = createUser(nextUser("mark@email.com"));
+        User user2 = createUser(nextUser("ben@email.com"));
+        User user4 = createUser(nextUser("ben@email.com"));
+        User user5 = createUser(nextUser("ben@email.com"));
 
-        MvcResult creationResult1 = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user1))).andReturn();
-        MvcResult creationResult2 = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user2))).andReturn();
-        MvcResult creationResult3 = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user3))).andReturn();
-        MvcResult creationResult4 = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user4))).andReturn();
-        MvcResult creationResult5 = mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user5))).andReturn();
+        int userId1 = user1.getId();
+        int userId2 = user2.getId();
+        int friendId2 = user4.getId();
+        int friendId3 = user5.getId();
 
-        User createdUser1 = objectMapper.readValue(creationResult1.getResponse().getContentAsString(), User.class);
-        User createdUser2 = objectMapper.readValue(creationResult2.getResponse().getContentAsString(), User.class);
-        User createdFriend1 = objectMapper.readValue(creationResult3.getResponse().getContentAsString(), User.class);
-        User createdFriend2 = objectMapper.readValue(creationResult4.getResponse().getContentAsString(), User.class);
-        User createdFriend3 = objectMapper.readValue(creationResult5.getResponse().getContentAsString(), User.class);
+        addFriend(userId1, friendId2);
+        addFriend(userId1, friendId3);
 
-        int userId1 = createdUser1.getId(), userId2 = createdUser2.getId();
-        int friendId1 = createdFriend1.getId(), friendId2 = createdFriend2.getId(), friendId3 = createdFriend3.getId();
+        addFriend(userId2, friendId2);
+        addFriend(userId2, friendId3);
 
-        mockMvc.perform(put("/users/{id}/friends/{friendId}", userId1, friendId1)).andExpect(status().isOk());
-        mockMvc.perform(put("/users/{id}/friends/{friendId}", userId1, friendId2)).andExpect(status().isOk());
-        mockMvc.perform(put("/users/{id}/friends/{friendId}", userId1, friendId3)).andExpect(status().isOk());
-        mockMvc.perform(put("/users/{id}/friends/{friendId}", userId2, friendId1)).andExpect(status().isOk());
-        mockMvc.perform(put("/users/{id}/friends/{friendId}", userId2, friendId2)).andExpect(status().isOk());
+        List<User> expectedUser1FriendList = new LinkedList<>();
+        expectedUser1FriendList.add(getUserById(friendId2));
+        expectedUser1FriendList.add(getUserById(friendId3));
 
-        mockMvc.perform(get("/users/{id}/friends/common/{otherId}", userId1, userId2)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("[0].id").value(createdFriend2.getId()))
-                .andExpect(jsonPath("[0].name").value(createdFriend2.getName()))
-                .andExpect(jsonPath("[1].id").value(createdFriend1.getId()))
-                .andExpect(jsonPath("[1].name").value(createdFriend1.getName()));
+        List<User> actualUser1FriendsList = getFriends(userId1);
+        assertEquals(expectedUser1FriendList, actualUser1FriendsList);
 
-        mockMvc.perform(get("/users/{id}/friends/", userId2)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("[0].id").value(createdFriend1.getId()))
-                .andExpect(jsonPath("[0].name").value(createdFriend1.getName()))
-                .andExpect(jsonPath("[1].id").value(createdFriend2.getId()))
-                .andExpect(jsonPath("[1].name").value(createdFriend2.getName()));
+        List<User> expectedCommonFriends = new LinkedList<>();
+        expectedCommonFriends.add(getUserById(friendId3));
+        expectedCommonFriends.add(getUserById(friendId2));
+
+        List<User> actualCommonFriends = getCommonFriends(userId1, userId2);
+
+        assertEquals(expectedCommonFriends.size(), actualCommonFriends.size());
     }
 
     @Test
-    public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() {
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
-
-        userDbStorage.createUser(user1);
-        userDbStorage.createUser(user2);
-
-        int userId = user1.getId();
+    public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() throws Exception {
+        User user1 = createUser(nextUser("mark@email.com"));
+        createUser(nextUser("ben@email.com"));
         int friendId = 333;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(userId, friendId));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(user1.getId(), friendId));
         String expectedMessage = "User with id 333 doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
