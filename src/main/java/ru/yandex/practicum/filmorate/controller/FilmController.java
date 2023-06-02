@@ -47,7 +47,7 @@ public class FilmController {
     public void addScore(
             @PathVariable("id") int filmId,
             @PathVariable("userId") int userId,
-            @RequestParam @NotNull @Min(1) @Max(10) int score
+            @RequestParam("score") @NotNull @Min(1) @Max(10) int score
     ) {
         filmService.addScore(filmId, userId, score);
     }

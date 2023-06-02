@@ -1,11 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -15,7 +20,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.impl.db.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
+import util.SimpleCrudOperations;
 
+import javax.print.attribute.standard.Media;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -28,18 +35,40 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static util.CustomEasyRandom.nextFilm;
+import static util.CustomEasyRandom.nextUser;
+
+
 @SpringBootTest
+@AutoConfigureMockMvc
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class FilmControllerTest {
+class FilmControllerTest extends SimpleCrudOperations {
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
     private final DirectorDbStorage directorDbStorage;
     private static final Validator VALIDATOR;
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         VALIDATOR = validatorFactory.usingContext().getValidator();
+    }
+
+    @AfterEach
+    public void clearDb() {
+        filmDbStorage.clearTableAndResetIds();
     }
 
     @Test
@@ -56,20 +85,88 @@ class FilmControllerTest {
     }
 
     @Test
-    public void shouldGetAllFilms() {
-        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
-        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).build()).build();
+    public void shouldGetAllFilms() throws Exception {
+        createFilm(nextFilm(2000));
+        createFilm(nextFilm(2001));
+        mockMvc.perform(get("/films").contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andReturn();
+    }
 
-        filmDbStorage.createFilm(film1);
-        filmDbStorage.createFilm(film2);
+    @Test
+    public void shouldGetCommonFilms() throws Exception {
+        Film film1 = createFilm(nextFilm(1999));
+        Film film2 = createFilm(nextFilm(2000));
 
-        int filmId1 = film1.getId(), filmId2 = film2.getId();
-        List<Film> expected = new ArrayList<>();
-        expected.add(filmDbStorage.getFilmById(filmId1));
-        expected.add(filmDbStorage.getFilmById(filmId2));
+        int filmId1 = film1.getId();
+        int filmId2 = film2.getId();
 
-        List<Film> actual = filmDbStorage.getAllFilms();
-        assertEquals(expected, actual, "Not all films were added to storage.");
+        User user1 = createUser(nextUser("mark@email.com"));
+        User user2 = createUser(nextUser("ben@email.com"));
+
+        int userId1 = user1.getId();
+        int userId2 = user2.getId();
+
+        int likeScore1 = 5;
+
+        addScore(filmId1, userId1, likeScore1);
+        addScore(filmId1, userId2, likeScore1);
+        addScore(filmId2, userId2, likeScore1);
+
+        List<Film> expectedCommonFilms = new ArrayList<>();
+        expectedCommonFilms.add(getFilmById(filmId1));
+
+        List<Film> actualCommonFilms = getCommonFilms(userId1, userId2);
+
+        assertEquals(expectedCommonFilms, actualCommonFilms);
+    }
+
+    @Test
+    public void shouldAddScoresFromUserWithCorrectId() throws Exception {
+        Film film1 = createFilm(nextFilm(1999));
+        Film film2 = createFilm(nextFilm(2000));
+
+        int filmId1 = film1.getId();
+        int filmId2 = film2.getId();
+
+        User user1 = createUser(nextUser("mark@email.com"));
+        User user2 = createUser(nextUser("ben@email.com"));
+        User user3 = createUser(nextUser("tom@email.com"));
+        User user4 = createUser(nextUser("bob@email.com"));
+        User user5 = createUser(nextUser("kirk@email.com"));
+
+        int userId1 = user1.getId();
+        int userId2 = user2.getId();
+        int userId3 = user3.getId();
+        int userId4 = user4.getId();
+        int userId5 = user5.getId();
+
+        int likeScore1 = 5;
+        int likeScore2 = 8;
+
+        addScore(filmId1, userId1, likeScore1);
+        addScore(filmId1, userId2, likeScore1);
+        addScore(filmId2, userId3, likeScore2);
+        addScore(filmId2, userId4, likeScore2);
+        addScore(filmId2, userId5, likeScore2);
+
+        final int count = 2;
+        final List<Film> expectedPopularFilms = new ArrayList<>();
+        expectedPopularFilms.add(getFilmById(filmId2));
+        expectedPopularFilms.add(getFilmById(filmId1));
+
+        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
+        assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
+
+        deleteScore(filmId1, userId1);
+        deleteScore(filmId1, userId2);
+
+        expectedPopularFilms.clear();
+        expectedPopularFilms.add(getFilmById(filmId2));
+        expectedPopularFilms.add(getFilmById(filmId1));
+        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
     }
 
     @Test
@@ -93,55 +190,6 @@ class FilmControllerTest {
         String expectedMessage = "Film with id " + updatedFilm.getId() + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void shouldAddScoresFromUserWithCorrectId() {
-        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
-        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).build()).build();
-
-        filmDbStorage.createFilm(film1);
-        filmDbStorage.createFilm(film2);
-
-        int filmId1 = film1.getId(), filmId2 = film2.getId();
-
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
-        User user3 = User.builder().name("Clark").login("clarklogin").email("clark@email.com").birthday(LocalDate.of(1997, 4, 6)).build();
-        User user4 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2000, 6, 10)).build();
-        User user5 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2001, 8, 12)).build();
-
-        userDbStorage.createUser(user1);
-        userDbStorage.createUser(user2);
-        userDbStorage.createUser(user3);
-        userDbStorage.createUser(user4);
-        userDbStorage.createUser(user5);
-
-        int userId1 = user1.getId(), userId2 = user2.getId(), userId3 = user3.getId(), userId4 = user4.getId(), userId5 = user5.getId();
-        int likeScore1 = 5;
-        int likeScore2 = 8;
-
-        filmDbStorage.addScore(filmId1, userId1, likeScore1);
-        filmDbStorage.addScore(filmId1, userId2, likeScore1);
-        filmDbStorage.addScore(filmId2, userId3, likeScore2);
-        filmDbStorage.addScore(filmId2, userId4, likeScore2);
-        filmDbStorage.addScore(filmId2, userId5, likeScore2);
-
-        final int count = 2;
-        final List<Film> expectedPopularFilms = new ArrayList<>();
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
-
-        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
-        assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
-
-        filmDbStorage.deleteScore(filmId1, userId1);
-        filmDbStorage.deleteScore(filmId1, userId2);
-
-        expectedPopularFilms.clear();
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId2));
-        expectedPopularFilms.add(filmDbStorage.getFilmById(filmId1));
-        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
     }
 
     @Test
@@ -199,10 +247,5 @@ class FilmControllerTest {
         String expectedMessage = "Film with id " + filmId + " doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);
-    }
-
-    @AfterEach
-    public void clearDb() {
-        filmDbStorage.clearTableAndResetIds();
     }
 }

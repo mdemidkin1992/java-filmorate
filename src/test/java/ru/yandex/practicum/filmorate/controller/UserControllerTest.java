@@ -10,10 +10,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
+import util.SimpleCrudOperations;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,7 +36,7 @@ import static util.CustomEasyRandom.nextUser;
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class UserControllerTest {
+class UserControllerTest extends SimpleCrudOperations {
     private final UserDbStorage userDbStorage;
     private static final Validator VALIDATOR;
 
@@ -51,81 +51,9 @@ class UserControllerTest {
         VALIDATOR = validatorFactory.usingContext().getValidator();
     }
 
-    public User createUser(User user) throws Exception {
-        MvcResult result = this.mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(user.getName()))
-                .andReturn();
-        return objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                User.class
-        );
-
-    }
-
-    public void addFriend(int userId, int friendId) throws Exception {
-        mockMvc.perform(
-                        put("/users/{id}/friends/{friendId}", userId, friendId)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    public void deleteFriend(int userId, int friendId) throws Exception {
-        mockMvc.perform(
-                        delete("/users/{id}/friends/{friendId}", userId, friendId)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    public List<User> getFriends(int userId) throws Exception {
-        MvcResult result = this.mockMvc.perform(get("/users/{id}/friends", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-        return List.of(objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                User[].class
-        ));
-    }
-
-    public List<User> getCommonFriends(int userId1, int userId2) throws Exception {
-        MvcResult result = this.mockMvc.perform(get("/users/{id}/friends/common/{toherId}", userId1, userId2)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-        return List.of(objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                User[].class
-        ));
-    }
-
-    public User getUserById(int userId) throws Exception {
-        MvcResult result = this.mockMvc.perform(get("/users/{id}", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-        return objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                User.class
-        );
-    }
-
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearDb();
+        userDbStorage.clearTablesAndResetIds();
     }
 
     @Test

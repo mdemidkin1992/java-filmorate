@@ -50,8 +50,8 @@ public class FilmService {
     }
 
     @SaveUserEvent(eventType = EventType.SCORE, operation = OperationType.ADD, entityIdParamName = "filmId")
-    public void addScore(int filmId, int userId, int likeScore) {
-        filmStorage.addScore(filmId, userId, likeScore);
+    public void addScore(int filmId, int userId, int score) {
+        filmStorage.addScore(filmId, userId, score);
     }
 
     @SaveUserEvent(eventType = EventType.SCORE, operation = OperationType.REMOVE, entityIdParamName = "filmId")
