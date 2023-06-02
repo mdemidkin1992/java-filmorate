@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,10 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureTestDatabase
 public class SimpleCrudOperations {
     @Autowired
-    private MockMvc mockMvc;
+    protected MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
 
     public Film createFilm(Film film) throws Exception {
         MvcResult result = this.mockMvc.perform(post("/films")
@@ -43,9 +42,9 @@ public class SimpleCrudOperations {
         );
     }
 
-    public void addScore(int userId, int filmId, int score) throws Exception {
+    public void addScore(int filmId, int userId, int score) throws Exception {
         mockMvc.perform(
-                        put("/films/{id}/score/{userId}", userId, filmId)
+                        put("/films/{id}/score/{userId}", filmId, userId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .param("score", String.valueOf(score)))
                 .andDo(print())
@@ -53,9 +52,9 @@ public class SimpleCrudOperations {
                 .andReturn();
     }
 
-    public void deleteScore(int userId, int filmId) throws Exception {
+    public void deleteScore(int filmId, int userId) throws Exception {
         mockMvc.perform(
-                        delete("/films/{id}/score/{userId}", userId, filmId)
+                        delete("/films/{id}/score/{userId}", filmId, userId)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -74,11 +73,59 @@ public class SimpleCrudOperations {
         );
     }
 
+    public void deleteFilmById(int filmId) throws Exception {
+        mockMvc.perform(delete("/films/{id}", filmId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
     public List<Film> getCommonFilms(int userId, int friendId) throws Exception {
         MvcResult result = this.mockMvc.perform(get("/films/common")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("userId", String.valueOf(userId))
                         .param("friendId", String.valueOf(friendId)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return List.of(objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                Film[].class
+        ));
+    }
+
+    public List<Film> getPopularFilms(int count) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/films/popular")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("count", String.valueOf(count)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return List.of(objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                Film[].class
+        ));
+    }
+
+    public List<Film> searchByTitleOrDirector(String query, String by) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/films/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("query", query)
+                        .param("by", by))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        return List.of(objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                Film[].class
+        ));
+    }
+
+    public List<Film> getAllFilmsByDirectorSortedByYearOrScores(int directorId, String sortBy) throws Exception {
+        MvcResult result = this.mockMvc.perform(get("/films/director/{id}", directorId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("sortBy", sortBy))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();

@@ -52,7 +52,7 @@ public class FilmController {
         filmService.addScore(filmId, userId, score);
     }
 
-    @DeleteMapping("{id}/like/{userId}")
+    @DeleteMapping("{id}/score/{userId}")
     public void deleteScore(@PathVariable("id") int filmId,
                             @PathVariable("userId") int userId) {
         filmService.deleteScore(filmId, userId);
@@ -79,7 +79,7 @@ public class FilmController {
     }
 
     @GetMapping("/director/{id}")
-    public List<Film> getAllFilmsByDirectorSortedByYearOrLikes(
+    public List<Film> getAllFilmsByDirectorSortedByYearOrScores(
             @PathVariable("id") int directorId, @RequestParam String sortBy) {
         return filmService.getAllFilmsByDirectorSortedByYearOrScores(directorId, sortBy);
     }

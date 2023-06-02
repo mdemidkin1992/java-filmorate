@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -17,26 +15,21 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.impl.db.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
 import util.SimpleCrudOperations;
 
-import javax.print.attribute.standard.Media;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,15 +44,7 @@ import static util.CustomEasyRandom.nextUser;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmControllerTest extends SimpleCrudOperations {
     private final FilmDbStorage filmDbStorage;
-    private final UserDbStorage userDbStorage;
-    private final DirectorDbStorage directorDbStorage;
     private static final Validator VALIDATOR;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
@@ -96,6 +81,52 @@ class FilmControllerTest extends SimpleCrudOperations {
     }
 
     @Test
+    public void shouldDeleteFilmById() throws Exception {
+        Film film = createFilm(nextFilm(1999));
+        deleteFilmById(film.getId());
+
+        mockMvc.perform(get("/films/{id}", film.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof FilmNotFoundException));
+    }
+
+    @Test
+    public void shouldGetAllFilmsByDirectorSortedByYearOrScores() throws Exception {
+        Director director = Director.builder().name("Quentin Tarantino").build();
+
+        MvcResult result = mockMvc.perform(post("/directors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(director)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Director createdDirector = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                Director.class);
+
+        Film film1 = nextFilm(1999);
+        Film film2 = nextFilm(2000);
+
+        film1.setDirectors(Set.of(createdDirector));
+        film2.setDirectors(Set.of(createdDirector));
+
+        film1 = createFilm(film1);
+        film2 = createFilm(film2);
+
+        List<Film> expectedFilms = new ArrayList<>();
+        expectedFilms.add(film1);
+        expectedFilms.add(film2);
+
+        String sortBy = "year";
+
+        List<Film> actualFilms = getAllFilmsByDirectorSortedByYearOrScores(createdDirector.getId(), sortBy);
+
+        assertEquals(expectedFilms, actualFilms);
+    }
+
+    @Test
     public void shouldGetCommonFilms() throws Exception {
         Film film1 = createFilm(nextFilm(1999));
         Film film2 = createFilm(nextFilm(2000));
@@ -124,7 +155,7 @@ class FilmControllerTest extends SimpleCrudOperations {
     }
 
     @Test
-    public void shouldAddScoresFromUserWithCorrectId() throws Exception {
+    public void shouldGetPopularFilms() throws Exception {
         Film film1 = createFilm(nextFilm(1999));
         Film film2 = createFilm(nextFilm(2000));
 
@@ -157,95 +188,110 @@ class FilmControllerTest extends SimpleCrudOperations {
         expectedPopularFilms.add(getFilmById(filmId2));
         expectedPopularFilms.add(getFilmById(filmId1));
 
-        final List<Film> actualPopularFilms = filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null);
+        final List<Film> actualPopularFilms = getPopularFilms(count);
         assertEquals(expectedPopularFilms.size(), actualPopularFilms.size());
 
-        deleteScore(filmId1, userId1);
-        deleteScore(filmId1, userId2);
+        deleteScore(filmId2, userId3);
+        deleteScore(filmId2, userId4);
+        deleteScore(filmId2, userId5);
 
         expectedPopularFilms.clear();
-        expectedPopularFilms.add(getFilmById(filmId2));
         expectedPopularFilms.add(getFilmById(filmId1));
-        assertEquals(expectedPopularFilms, filmDbStorage.getPopularFilmsByGenreIdAndYear(count, null, null));
+        expectedPopularFilms.add(getFilmById(filmId2));
+        assertEquals(expectedPopularFilms, getPopularFilms(count));
     }
 
     @Test
-    public void shouldUpdateFilmNormal() {
-        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
-        filmDbStorage.createFilm(film1);
-        int filmId = film1.getId();
-        Film originalFilm = filmDbStorage.getFilmById(filmId);
-        Film updatedFilm = originalFilm;
-        updatedFilm.setDuration(201);
-        filmDbStorage.updateFilm(updatedFilm);
+    public void shouldUpdateFilmNormal() throws Exception {
+        Film film = createFilm(nextFilm(1999));
+        Film updatedFilm = getFilmById(film.getId());
+        int newDuration = 201;
+        updatedFilm.setDuration(newDuration);
 
-        assertEquals(updatedFilm, filmDbStorage.getFilmById(updatedFilm.getId()));
-        filmDbStorage.updateFilm(originalFilm);
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedFilm)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(updatedFilm.getId()))
+                .andExpect(jsonPath("$.name").value(updatedFilm.getName()))
+                .andExpect(jsonPath("$.duration").value(newDuration))
+                .andReturn();
     }
 
     @Test
-    public void shouldNotUpdateFilmWhenIdIncorrect() {
-        Film updatedFilm = Film.builder().id(999).build();
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.updateFilm(updatedFilm));
-        String expectedMessage = "Film with id " + updatedFilm.getId() + " doesn't exist";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
+    public void shouldNotUpdateFilmWhenIdIncorrect() throws Exception {
+        Film updatedFilm = nextFilm(1999);
+        updatedFilm.setId(999);
+
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedFilm)))
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof FilmNotFoundException));
     }
 
     @Test
-    public void shouldGetFilmsByDirectorIdSortByYear() {
-        Director director = Director.builder().name("Director").build();
-        directorDbStorage.createDirector(director);
-        Set<Director> directors = new HashSet<>();
-        directors.add(director);
+    public void shouldGetFilmsByDirectorIdSortByYear() throws Exception {
+        Film film1 = nextFilm(1999);
+        Film film2 = nextFilm(2000);
 
-        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).name("PG-13").build()).directors(directors).build();
-        Film film2 = Film.builder().name("Avatar").description("This is the new world").releaseDate(LocalDate.of(2009, 12, 17)).duration(162).mpa(Rating.builder().id(3).name("PG-13").build()).directors(directors).build();
+        String film1Name = "New movie";
+        String film2Name = "Some film";
 
-        filmDbStorage.createFilm(film2);
-        filmDbStorage.createFilm(film1);
+        film1.setName(film1Name);
+        film2.setName(film2Name);
 
-        List<Film> actual = filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "YEAR");
-        List<Film> expected = new ArrayList<>();
-        expected.add(film1);
-        expected.add(film2);
-        System.out.println(actual);
-        assertEquals(expected, actual);
+        film1 = createFilm(film1);
+        film2 = createFilm(film2);
+
+        String query = "some";
+        String by = "year";
+
+        List<Film> expectedFilms = new ArrayList<>();
+        expectedFilms.add(film2);
+
+        List<Film> actualFilms = searchByTitleOrDirector(query, by);
+
+        assertEquals(expectedFilms, actualFilms);
     }
 
     @Test
-    public void shouldNotGetFilmWhenIdIsIncorrect() {
-        int filmId = 999;
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.getFilmById(filmId));
-        String expectedMessage = "Film with id " + filmId + " doesn't exist";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
+    public void shouldNotGetFilmWhenIdIsIncorrect() throws Exception {
+        int filmId = 111;
+
+        mockMvc.perform(get("/films/{id}", filmId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof FilmNotFoundException));
     }
 
+
     @Test
-    public void shouldNotAddScoreWhenUserIdIsIncorrect() {
-        Film film1 = Film.builder().name("Titanic").description("Nothing on Earth can separate them").releaseDate(LocalDate.of(1997, 11, 1)).duration(194).mpa(Rating.builder().id(3).build()).build();
-        filmDbStorage.createFilm(film1);
-        int filmId1 = film1.getId();
+    public void shouldNotAddScoreWhenUserIdIsIncorrect() throws Exception {
+        Film film = createFilm(nextFilm(1999));
+        int filmId = film.getId();
         int userId = 999;
-        int likeScore = 5;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> filmDbStorage.addScore(filmId1, userId, likeScore));
-        String expectedMessage = "User with id " + userId + " doesn't exist";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
+        int score = 5;
+
+        mockMvc.perform(put("/films/{id}/score/{userId}", filmId, userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("score", String.valueOf(score)))
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof UserNotFoundException));
     }
 
     @Test
-    public void shouldNotAddScoreWhenFilmIdIsIncorrect() {
+    public void shouldNotAddScoreWhenFilmIdIsIncorrect() throws Exception {
         int filmId = 999;
-        int likeScore = 5;
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        userDbStorage.createUser(user1);
-        int userId1 = user1.getId();
+        int score = 5;
+        User user = createUser(nextUser("mark@email.com"));
+        int userId = user.getId();
 
-        FilmNotFoundException exception = assertThrows(FilmNotFoundException.class, () -> filmDbStorage.addScore(filmId, userId1, likeScore));
-        String expectedMessage = "Film with id " + filmId + " doesn't exist";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
+        mockMvc.perform(put("/films/{id}/score/{userId}", filmId, userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("score", String.valueOf(score)))
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof FilmNotFoundException));
     }
 }
