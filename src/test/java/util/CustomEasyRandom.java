@@ -69,7 +69,9 @@ public class CustomEasyRandom {
     }
 
     public static User nextUser() {
-        return easyRandom.nextObject(User.class);
+        User user = easyRandom.nextObject(User.class);
+        user.setEmail(user.getName() + "@gmail.com");
+        return user;
     }
 
     public static Film nextFilm() {
