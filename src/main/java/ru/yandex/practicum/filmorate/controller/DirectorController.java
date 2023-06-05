@@ -24,40 +24,26 @@ public class DirectorController {
 
     @GetMapping
     public List<Director> getDirectors() {
-        log.info("GET request for all directors received");
-        List<Director> response = directorService.getDirectors();
-        log.info("Number of directors: {}", response.size());
-        log.info("All directors: {}", response);
-        return response;
+        return directorService.getDirectors();
     }
 
     @PostMapping
     public Director createDirector(@NotNull @RequestBody @Valid Director director) {
-        log.info("POST request received: {}", director);
-        Director response = directorService.createDirector(director);
-        log.info("Added director: {}", response.toString());
-        return response;
+        return directorService.createDirector(director);
     }
 
     @GetMapping("{id}")
     public Director getDirectorById(@PathVariable("id") int directorId) {
-        log.info("GET request received: director with id \"{}\"", directorId);
-        Director response = directorService.getDirectorById(directorId);
-        log.info("Director with id \"{}\" : {}", directorId, response.toString());
-        return response;
+        return directorService.getDirectorById(directorId);
     }
 
     @PutMapping
     public Director updateDirector(@NotNull @RequestBody @Valid Director director) {
-        log.info("PUT request received: {}", director);
-        Director response = directorService.updateDirector(director);
-        log.info("Updated director: {}", response.toString());
-        return response;
+        return directorService.updateDirector(director);
     }
 
     @DeleteMapping("{id}")
     public boolean deleteDirectorById(@PathVariable("id") int directorId) {
-        log.info("GET request for deleting director with id \"{}\" received", directorId);
         return directorService.deleteDirector(directorId);
     }
 }

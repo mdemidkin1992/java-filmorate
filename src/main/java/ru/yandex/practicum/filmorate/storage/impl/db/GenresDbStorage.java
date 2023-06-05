@@ -28,7 +28,6 @@ public class GenresDbStorage extends DBStorage implements GenresStorage {
     public Genre getGenreById(int genreId) {
         Genre genre = jdbcTemplate.query(SqlQueries.GET_GENRE, new GenreMapper(), genreId).stream().findAny().orElse(null);
         if (genre == null) {
-            log.error("Genre with id {} doesn't exist", genreId);
             throw new GenreNotFoundException("Genre with id " + genreId + " doesn't exist");
         }
         return genre;

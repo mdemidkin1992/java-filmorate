@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.impl.db.mapper.UserMapper;
@@ -15,8 +13,10 @@ import ru.yandex.practicum.filmorate.utility.SqlQueries;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component("userDbStorage")
 @Slf4j
@@ -52,7 +52,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     public User getUserById(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER, new UserMapper(), userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         return user;
@@ -67,7 +66,6 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     public List<User> getFriends(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER, new UserMapper(), userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         return jdbcTemplate.query(SqlQueries.GET_FRIENDS, new UserMapper(), userId);
@@ -99,45 +97,9 @@ public class UserDbStorage extends DBStorage implements UserStorage {
     }
 
     @Override
-    public int getOtherUserIdWithCommonInterests(int userId) {
-        Map<Integer, List<Integer>> userLikes = new HashMap<>();
-        List<Film> recommendations = new ArrayList<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM LIKES");
-
-        while (rs.next()) {
-            int userDbId = rs.getInt("USER_ID");
-            int filmDbId = rs.getInt("FILM_ID");
-
-            List<Integer> likes = userLikes.getOrDefault(userDbId, new ArrayList<>());
-            likes.add(filmDbId);
-            userLikes.put(userDbId, likes);
-        }
-
-        List<Integer> likedFilms = userLikes.get(userId);
-        int maxCount = Integer.MIN_VALUE;
-        int otherUserIdWithCommonInterests = -1;
-
-        for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
-            if (entry.getKey() != userId) {
-                List<Integer> otherUserLikes = entry.getValue();
-                List<Integer> intersection = likedFilms.stream().filter(otherUserLikes::contains).collect(Collectors.toList());
-                int intersectionCount = intersection.size();
-
-                if (intersectionCount > maxCount) {
-                    maxCount = intersectionCount;
-                    otherUserIdWithCommonInterests = entry.getKey();
-                }
-            }
-        }
-
-        return otherUserIdWithCommonInterests;
-    }
-
-    @Override
     public void deleteUserById(int userId) {
         User user = jdbcTemplate.query(SqlQueries.GET_USER,new UserMapper(),userId).stream().findAny().orElse(null);
         if (user == null) {
-            log.error("User with id {} doesn't exist", userId);
             throw new UserNotFoundException("User with id " + userId + " doesn't exist");
         }
         jdbcTemplate.update(SqlQueries.DELETE_USER_BY_ID,userId);
@@ -156,11 +118,12 @@ public class UserDbStorage extends DBStorage implements UserStorage {
         user.setId(keyHolder.getKey().intValue());
     }
 
-    public void clearDb() {
-        jdbcTemplate.update("DELETE FROM APP_USERS");
-        jdbcTemplate.update("DELETE FROM FILMS");
-        jdbcTemplate.update("DELETE FROM FILMS_GENRES");
-        jdbcTemplate.update("DELETE FROM LIKES");
-        jdbcTemplate.update("DELETE FROM FRIENDS");
+    public void clearTablesAndResetIds() {
+        jdbcTemplate.update(SqlQueries.CLEAR_APP_USERS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_AND_RESET_ID);
+        jdbcTemplate.update(SqlQueries.CLEAR_FILMS_GENRES);
+        jdbcTemplate.update(SqlQueries.CLEAR_SCORES);
+        jdbcTemplate.update(SqlQueries.CLEAR_FRIENDS);
     }
+
 }

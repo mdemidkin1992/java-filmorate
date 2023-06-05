@@ -39,9 +39,9 @@ public class FilmDbStorageTest {
     void shouldBeSize0CorrectDeleteFilm() {
         Film film = createFilm();
         filmDbStorage.createFilm(film);
-        System.out.println("DEBUG: " + filmDbStorage.getFilms());
-        filmDbStorage.deleteFilmById(filmDbStorage.getFilms().stream().findFirst().get().getId());
-        assertEquals(filmDbStorage.getFilms().size(), 0);
+        System.out.println("DEBUG: " + filmDbStorage.getAllFilms());
+        filmDbStorage.deleteFilmById(filmDbStorage.getAllFilms().stream().findFirst().get().getId());
+        assertEquals(filmDbStorage.getAllFilms().size(), 0);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class FilmDbStorageTest {
 
     @Test
     void shouldReturnEmptyCollectionOfAllFilms() {
-        assertEquals(0, filmDbStorage.getFilms().size());
+        assertEquals(0, filmDbStorage.getAllFilms().size());
     }
 
     @Test
@@ -235,7 +235,7 @@ public class FilmDbStorageTest {
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
         Collection<Film> expected = List.of(filmOne, filmTwo, filmThree);
         Collection<Film> filmsDirectorSortedByYear =
-                filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "year");
+                filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "year");
         System.out.println("DEBUG:" + expected);
         System.out.println("DEBUG:" + filmsDirectorSortedByYear);
         assertEquals(3, filmsDirectorSortedByYear.size());
@@ -243,7 +243,9 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    void shouldReturnCollectionOfFilmsSortedByLikesWhenDirectorIsFound() {
+    void shouldReturnCollectionOfFilmsSortedByScoresWhenDirectorIsFound() {
+        int likeScore = 8;
+
         User user = User.builder()
                 .name("User")
                 .login("super-user")
@@ -279,18 +281,18 @@ public class FilmDbStorageTest {
         filmOne.setId(filmDbStorage.createFilm(filmOne).getId());
         filmTwo.setId(filmDbStorage.createFilm(filmTwo).getId());
         filmThree.setId(filmDbStorage.createFilm(filmThree).getId());
-        filmDbStorage.addLike(filmThree.getId(), userId);
+        filmDbStorage.addScore(filmThree.getId(), userId, likeScore);
         Collection<Film> expected = List.of(filmThree, filmOne, filmTwo);
-        Collection<Film> filmsDirectorSortedByLikes =
-                filmDbStorage.findAllFilmsByDirectorSortedByYearOrLikes(director.getId(), "likes");
+        Collection<Film> filmsDirectorSortedByScores =
+                filmDbStorage.findAllFilmsByDirectorSortedByYearOrScores(director.getId(), "scores");
         System.out.println("DEBUG:" + expected);
-        System.out.println("DEBUG:" + filmsDirectorSortedByLikes);
-        assertEquals(3, filmsDirectorSortedByLikes.size());
-        assertEquals(expected, filmsDirectorSortedByLikes);
+        System.out.println("DEBUG:" + filmsDirectorSortedByScores);
+        assertEquals(3, filmsDirectorSortedByScores.size());
+        assertEquals(expected, filmsDirectorSortedByScores);
     }
 
     @AfterEach
     public void clearDb() {
-        filmDbStorage.clearDb();
+        filmDbStorage.clearTableAndResetIds();
     }
 }

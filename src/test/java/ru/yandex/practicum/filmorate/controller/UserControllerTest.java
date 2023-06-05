@@ -5,10 +5,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.impl.db.UserDbStorage;
+import util.SimpleCrudOperations;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -19,12 +22,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static util.CustomEasyRandom.nextUser;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class UserControllerTest {
+class UserControllerTest extends SimpleCrudOperations {
     private final UserDbStorage userDbStorage;
     private static final Validator VALIDATOR;
 
@@ -35,81 +45,69 @@ class UserControllerTest {
 
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearDb();
+        userDbStorage.clearTablesAndResetIds();
     }
 
     @Test
     public void testValidations() {
-        User invalidUser = User.builder().email("wrong email.com@").name("wrong user name").birthday(LocalDate.of(2030, 1, 1)).build();
+        User invalidUser = nextUser("wrong email.com@");
         Set<ConstraintViolation<User>> validates = VALIDATOR.validate(invalidUser);
         assertTrue(validates.size() > 0);
         validates.stream().map(v -> v.getMessage()).forEach(System.out::println);
     }
 
     @Test
-    public void shouldGetAllUsers() {
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
-
-        userDbStorage.createUser(user1);
-        userDbStorage.createUser(user2);
-
-        List<User> actual = userDbStorage.getUsers();
-        assertEquals(2, actual.size(), "Not all users were added to storage.");
-
+    public void shouldGetAllUsers() throws Exception {
+        createUser(nextUser("mark@email.com"));
+        createUser(nextUser("ben@email.com"));
+        mockMvc.perform(get("/users")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andReturn();
     }
 
     @Test
-    public void shouldAddFriendWhenIdIsCorrect() {
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
-        User user3 = User.builder().name("Clark").login("clarklogin").email("clark@email.com").birthday(LocalDate.of(1997, 4, 6)).build();
-        User user4 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2000, 6, 10)).build();
-        User user5 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(2001, 8, 12)).build();
+    public void shouldAddFriendWhenIdIsCorrect() throws Exception {
+        User user1 = createUser(nextUser("mark@email.com"));
+        User user2 = createUser(nextUser("ben@email.com"));
+        User user4 = createUser(nextUser("ben@email.com"));
+        User user5 = createUser(nextUser("ben@email.com"));
 
-        userDbStorage.createUser(user1);
-        userDbStorage.createUser(user2);
-        userDbStorage.createUser(user3);
-        userDbStorage.createUser(user4);
-        userDbStorage.createUser(user5);
+        int userId1 = user1.getId();
+        int userId2 = user2.getId();
+        int friendId2 = user4.getId();
+        int friendId3 = user5.getId();
 
-        int userId1 = user1.getId(), userId2 = user2.getId();
-        int friendId1 = user3.getId(), friendId2 = user4.getId(), friendId3 = user5.getId();
+        addFriend(userId1, friendId2);
+        addFriend(userId1, friendId3);
 
-        userDbStorage.addFriend(userId1, friendId2);
-        userDbStorage.addFriend(userId1, friendId3);
-
-        userDbStorage.addFriend(userId2, friendId2);
-        userDbStorage.addFriend(userId2, friendId3);
+        addFriend(userId2, friendId2);
+        addFriend(userId2, friendId3);
 
         List<User> expectedUser1FriendList = new LinkedList<>();
-        expectedUser1FriendList.add(userDbStorage.getUserById(friendId2));
-        expectedUser1FriendList.add(userDbStorage.getUserById(friendId3));
+        expectedUser1FriendList.add(getUserById(friendId2));
+        expectedUser1FriendList.add(getUserById(friendId3));
 
-        List<User> actualUser1FriendsList = userDbStorage.getFriends(userId1);
-        List<User> actualUser2FriendsList = userDbStorage.getFriends(userId2);
+        List<User> actualUser1FriendsList = getFriends(userId1);
+        assertEquals(expectedUser1FriendList, actualUser1FriendsList);
 
         List<User> expectedCommonFriends = new LinkedList<>();
-        expectedCommonFriends.add(userDbStorage.getUserById(friendId3));
-        expectedCommonFriends.add(userDbStorage.getUserById(friendId2));
+        expectedCommonFriends.add(getUserById(friendId3));
+        expectedCommonFriends.add(getUserById(friendId2));
 
-        List<User> actualCommonFriends = userDbStorage.getCommonFriends(userId1, userId2);
+        List<User> actualCommonFriends = getCommonFriends(userId1, userId2);
 
-        assertEquals(expectedUser1FriendList, actualUser1FriendsList);
         assertEquals(expectedCommonFriends.size(), actualCommonFriends.size());
     }
 
     @Test
-    public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() {
-        User user1 = User.builder().name("Mark").login("marklogin").email("mark@email.com").birthday(LocalDate.of(1992, 1, 2)).build();
-        User user2 = User.builder().name("Ben").login("benlogin").email("ben@email.com").birthday(LocalDate.of(1995, 2, 4)).build();
-
-        userDbStorage.createUser(user1);
-        userDbStorage.createUser(user2);
-
-        int userId = user1.getId();
+    public void shouldNotRemoveFriendsWhenFriendIdIsIncorrect() throws Exception {
+        User user1 = createUser(nextUser("mark@email.com"));
+        createUser(nextUser("ben@email.com"));
         int friendId = 333;
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(userId, friendId));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userDbStorage.deleteFriend(user1.getId(), friendId));
         String expectedMessage = "User with id 333 doesn't exist";
         String actualMessage = exception.getMessage();
         assertEquals(expectedMessage, actualMessage);

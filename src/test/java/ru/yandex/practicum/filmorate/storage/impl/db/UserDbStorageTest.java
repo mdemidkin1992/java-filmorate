@@ -38,11 +38,11 @@ public class UserDbStorageTest {
 
     private User createUser() {
         return User.builder().name("Ivan").login("ivanivan").email("ivan@yandex.ru")
-                .birthday(LocalDate.of(2000,10,10)).build();
+                .birthday(LocalDate.of(2000, 10, 10)).build();
     }
 
     @AfterEach
     public void clearDb() {
-        userDbStorage.clearDb();
+        userDbStorage.clearTablesAndResetIds();
     }
 }
