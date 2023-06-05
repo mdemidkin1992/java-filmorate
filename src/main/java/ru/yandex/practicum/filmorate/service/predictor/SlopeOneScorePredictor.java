@@ -6,10 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("slopeOneScorePredictor")
 public class SlopeOneScorePredictor implements Predictor {
@@ -21,6 +19,7 @@ public class SlopeOneScorePredictor implements Predictor {
     private final Map<Integer, HashMap<Integer, Integer>> freq = new HashMap<>();
     private final List<Integer> allFilmsIds = new ArrayList<>();
     private static final int MIN_RECOMMENDATION_SCORE = 5;
+    private static final int MAX_SIMILAR_USERS_COUNT = 10;
 
     @Autowired
     public SlopeOneScorePredictor(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
@@ -30,6 +29,7 @@ public class SlopeOneScorePredictor implements Predictor {
     @Override
     public List<Film> recommendFilms(int userId) {
         filmStorage.getFilmScoresStats(inputData, allFilmsIds);
+        chooseSimilarUsers(userId, inputData);
         getDifferencesMatrix(inputData);
         predict(inputData);
         List<Integer> recommendationsId = new ArrayList<>();
@@ -50,6 +50,70 @@ public class SlopeOneScorePredictor implements Predictor {
         return filmStorage.getFilmsWhereIdEquals(recommendationsId);
     }
 
+    /**
+     * Check similarity between users based on their ratings and get
+     * 10 most similar users to make recommendations
+     *
+     * @param userId
+     * @param inputData
+     */
+    private void chooseSimilarUsers(Integer userId, Map<Integer, HashMap<Integer, Double>> inputData) {
+        HashMap<Integer, Double> userRatings = inputData.get(userId);
+        HashMap<Integer, Double> userSimilarityCoefficients = new HashMap<>();
+
+        for (Map.Entry<Integer, HashMap<Integer, Double>> e : inputData.entrySet()) {
+            if (!Objects.equals(e.getKey(), userId)) {
+                List<Double> userVector1 = new ArrayList<>();
+                List<Double> userVector2 = new ArrayList<>();
+                for (Integer filmId : userRatings.keySet()) {
+                    if (e.getValue().containsKey(filmId)) {
+                        userVector1.add(userRatings.get(filmId));
+                        userVector2.add(e.getValue().get(filmId));
+                    }
+                }
+                Double coeff = getCosineSimilarity(userVector1, userVector2);
+                userSimilarityCoefficients.put(e.getKey(), coeff);
+            }
+        }
+
+        Map<Integer, Double> sortedMap =
+                userSimilarityCoefficients.entrySet().stream()
+                        .sorted(Map.Entry.comparingByValue())
+                        .limit(MAX_SIMILAR_USERS_COUNT)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                (e1, e2) -> e1, LinkedHashMap::new));
+
+        for (Integer id : inputData.keySet()) {
+            if (!sortedMap.containsKey(id) && !Objects.equals(id, userId)) {
+                inputData.remove(id);
+            }
+        }
+    }
+
+    /**
+     * Calculates the cosine similarity coefficient between two users
+     *
+     * @param v1
+     * @param v2
+     */
+    private double getCosineSimilarity(List<Double> v1, List<Double> v2) {
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+        for (int i = 0; i < v1.size(); i++) {
+            dotProduct += v1.get(i) * v2.get(i);
+            norm1 += Math.pow(v1.get(i), 2);
+            norm2 += Math.pow(v2.get(i), 2);
+        }
+        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    }
+
+    /**
+     * Calculates the supporting differences and frequencies matrices
+     * to make predictions about film recommendations for user
+     *
+     * @param inputData
+     */
     private void getDifferencesMatrix(Map<Integer, HashMap<Integer, Double>> inputData) {
 
         for (HashMap<Integer, Double> user : inputData.values()) {
@@ -82,6 +146,12 @@ public class SlopeOneScorePredictor implements Predictor {
         }
     }
 
+    /**
+     * Makes predictions based on selected similar users and their
+     * diff and freq matrices
+     *
+     * @param inputData
+     */
     private void predict(Map<Integer, HashMap<Integer, Double>> inputData) {
         HashMap<Integer, Double> uPred = new HashMap<>();
         HashMap<Integer, Integer> uFreq = new HashMap<>();
@@ -117,7 +187,5 @@ public class SlopeOneScorePredictor implements Predictor {
             outputData.put(e.getKey(), clean);
         }
     }
-
-
 
 }
